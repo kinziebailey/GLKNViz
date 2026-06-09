@@ -1,5 +1,28 @@
+# Global file for GLKN Visualizer 
 
-# Map Data ----
+# Libraries ----
+library(shiny)
+library(dplyr)
+library(tidyr)
+
+# Load data ----
+## WQ Data ----
+wqp_data1 <- read.csv('data/wqp_glkn.csv')
+
+### Data wrangling ----
+wqp_data <- wqp_data1 |> 
+  dplyr::mutate(start_date = as.Date(ActivityStartDate),
+                end_date = as.Date(ActivityEndDate)) |>
+  dplyr::rename(depth = ActivityDepthHeightMeasure.MeasureValue,
+                depth_unit = ActivityDepthHeightMeasure.MeasureUnitCode,
+                value = ResultMeasureValue,
+                value_unit = ResultMeasure.MeasureUnitCode,
+                lat = LatitudeMeasure,
+                lon = LongitudeMeasure) |> 
+  dplyr::select(-ActivityStartDate,
+                -ActivityEndDate)
+
+## Map Data ----
 ESRIimagery <- "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
 ESRItopo <- "http://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
 ESRINatGeo <- "http://services.arcgisonline.com/arcgis/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}"

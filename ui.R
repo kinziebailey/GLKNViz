@@ -20,7 +20,8 @@ ui <- shinyUI(
                font-weight:bold;
                margin-bottom: 10px;",
       ### GLKN link ----
-      HTML("<span> <a href='https://www.nps.gov/im/glkn/'> <img src='ah_small_black.gif',
+      HTML("<span> 
+      <a href='https://www.nps.gov/im/glkn/'> <img src='ah_small_black.gif' 
       alt='Water Quality Visualizer'> </a> GLKN Water Quality Data Visualizer</span>")
     ),
     
@@ -35,13 +36,47 @@ ui <- shinyUI(
     
     # Right Column ----
     column(width = 9, # 9/12 of the page
+           ## User Controls ----
+           ### Park ----
+           selectInput(
+             "park",
+             "Choose Park:",
+             choices = sort(unique(wqp_data$Park)),
+             selected = unique(wqp_data$Park)[1]
+           ),
+           ### Site ---
+           selectInput(
+             "station",
+             "Choose Site:",
+             choices = sort(unique(wqp_data$MonitoringLocationName)),
+             selected = unique(wqp_data$MonitoringLocationName)[1]
+           ),
+           ### Param ----
+           selectInput(
+             "parameter",
+             "Choose Parameter:",
+             choices = sort(unique(wqp_data$CharacteristicName)),
+             selected = unique(wqp_data$CharacteristicName)[1]
+           ),
+           ### Date Range ----
+           dateRangeInput(
+             "date_range",
+             "Date Range:",
+             start = min(wqp_data$end_date, na.rm = TRUE),
+             end = max(wqp_data$end_date, na.rm = TRUE)
+           ),
            ## Instructions Panel ----
            tabsetPanel(
              tabPanel(
              "Instructions",
-             suppressWarnings(includeHTML("www/instructions.html"))
+             includeHTML("www/Instruction.html")
+             ),
+             tabPanel(
+               "Time Series",
+               plotOutput("TimeSeriesPlot")
              )
-           )#,
+           )
+           
       )
     )
   )

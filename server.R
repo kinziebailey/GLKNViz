@@ -8,34 +8,12 @@ library(tidyr)
 # Server ----
 server <- function(input, output, session){
 
-# Map ----
-output$map <- leaflet::renderLeaflet({
-  leaflet::leaflet() |>
-    leaflet::addTiles()
-    # leaflet::addTiles(group = "Map", # access token issues
-    #                   urlTemplate = NPSbasic,
-    #                   options = tileOptions(minZoom = 8)) |>
-    # leaflet::addTiles(group = "Imagery",
-    #                   urlTemplate = ESRIimagery,
-    #                   options = tileOptions(minZoom = 8)) |>
-    # leaflet::addTiles(group = "Topo",
-    #                   urlTemplate = ESRItopo,
-    #                   options = tileOptions(minZoom = 8)) |>
-    # leaflet::addTiles(group = "NatGeo",
-    #                   urlTemplate = ESRINatGeo,
-    #                   options = tileOptions(minZoom = 8)) |>
-    # leaflet::addLayersControl(baseGroups = c("Map",
-    #                                          "Imagery",
-    #                                          "Topo",
-    #                                          "NatGeo"),
-    #                           options = layersControlOptions(collapsed = T))
-
-})
-
 # Update UI Inputs ----
 
 ## Site ----
 observeEvent(input$park, {
+  req(input$park != "")
+  
   sites <- wqp_data |> 
     filter(Park %in% input$park) |> 
     pull(MonitoringLocationName) |> 
@@ -44,12 +22,15 @@ observeEvent(input$park, {
   
   updateSelectInput(session,
                     "station",
-                    choices = sites,
-                    selected = sites[1])
+                    choices = c("Pick site" = "",
+                                sites),
+                    selected = "")
 })
 
 ## Parameter ----
 observeEvent(input$station, {
+  req(input$station != "")
+  
   params <- wqp_data |> 
     filter(MonitoringLocationName %in% input$station) |> 
     pull(CharacteristicName) |> 
@@ -58,12 +39,15 @@ observeEvent(input$station, {
   
   updateSelectInput(session,
                     "parameter",
-                    choices = params,
-                    selected = params[1])
+                    choices = c("Choose Parameter" = "",
+                                params),
+                    selected = "")
 })
 
 ## Date ----
 observeEvent(list(input$station, input$parameter), {
+  req(input$station != "", input$parameter != "")
+  
   df <- wqp_data |> 
     filter(MonitoringLocationName %in% input$station,
            CharacteristicName == input$parameter)
@@ -85,8 +69,45 @@ user_data <- reactive({
            CharacteristicName == input$parameter,
            end_date >= input$date_range[1],
            end_date <= input$date_range[2])
-  
 })
+
+# Map Reactive ----
+observeEvent(input$station, {
+  req(input$station)
+  
+  site <- wqp_data |>
+    filter(MonitoringLocationName == input$station)
+  
+  leafletProxy("map") |>
+    setView(
+      lng = site$lon[1],
+      lat = site$lat[1],
+      zoom = 12
+    ) |>
+    clearPopups() |>
+    addPopups(
+      lng = site$lon[1],
+      lat = site$lat[1],
+      popup = site$MonitoringLocationName[1]
+    )
+})
+
+# Map ----
+output$map <- leaflet::renderLeaflet({
+  
+  ## Initial map ----
+  leaflet(wqp_data) |>
+    addTiles() |> 
+    addCircleMarkers(lng = ~lon,
+                     lat = ~lat,
+                     radius = 5,
+                     color = "blue") |> 
+    fitBounds(lng1 = min(wqp_data$lon, na.rm = TRUE),
+              lat1 = min(wqp_data$lat, na.rm = TRUE),
+              lng2 = max(wqp_data$lon, na.rm = TRUE),
+              lat2 = max(wqp_data$lat, na.rm = TRUE))
+})
+
 
 # Time Series Plot ----
 

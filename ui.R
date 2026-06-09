@@ -40,28 +40,31 @@ ui <- shinyUI(
            ### Park ----
            selectInput(
              "park",
-             "Choose Park:",
-             choices = sort(unique(wqp_data$Park)),
-             selected = unique(wqp_data$Park)[1]
+             "Park",
+             choices = c("Choose Park" = "",
+                         sort(unique(wqp_data$Park))),
+             selected = ""
            ),
            ### Site ---
            selectInput(
              "station",
-             "Choose Site:",
-             choices = sort(unique(wqp_data$MonitoringLocationName)),
-             selected = unique(wqp_data$MonitoringLocationName)[1]
+             "Site",
+             choices = c("Choose Site" = "",
+                         sort(unique(wqp_data$MonitoringLocationName))),
+             selected = ""
            ),
            ### Param ----
            selectInput(
              "parameter",
-             "Choose Parameter:",
-             choices = sort(unique(wqp_data$CharacteristicName)),
-             selected = unique(wqp_data$CharacteristicName)[1]
+             "Parameter",
+             choices = c("Choose Parameter" = "",
+                         sort(unique(wqp_data$CharacteristicName))),
+             selected = ""
            ),
            ### Date Range ----
            dateRangeInput(
              "date_range",
-             "Date Range:",
+             "Date",
              start = min(wqp_data$end_date, na.rm = TRUE),
              end = max(wqp_data$end_date, na.rm = TRUE)
            ),

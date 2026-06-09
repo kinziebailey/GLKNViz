@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<body>
+    
+
+<p style="margin: 10px 40px;">Updated 2025-06-05</p>
+<hr style="margin: 10px 40px;">
+<h3 style="margin: 10px 40px;">Disclaimer</h3>
+<p style="margin: 10px 40px;">This visualizer tool allows users to explore and analyze water quality data. It uses data published on the U.S. Geological Survery Water Quality Portal:<br><a href="https://www.waterqualitydata.us/">USGS Water Quality Portal</a>
+<br><br>
+This visualizer tool operates using R Shiny code. A static copy of the application source code is available on NPS IRMA Data Store:<br>
+<a href="https://irma.nps.gov/DataStore/Reference/Profile/2313155">DataStore - National Capital Region Network Water Visualizer (R Shiny application)</a><br><br>
+The development version of the source code is available at:<br>
+<a href="https://github.com/NCRN/NCRNWaterViz/tree/ncrn_refactor">https://github.com/NCRN/NCRNWaterViz/tree/ncrn_refactor</a><br><br>
+This visualizer tool was adapted from the National Capital Region Network Water Visualizer (R Shiny application). A static copy of that application source code is available on NPS IRMA Data Store: <a href="https://irma.nps.gov/DataStore/Reference/Profile/2313155">DataStore - National Capital Region Network Water Visualizer (R Shiny application)</a>. The development version of the source code is available at: <a href="https://github.com/NCRN/NCRNWaterViz/tree/ncrn_refactor">https://github.com/NCRN/NCRNWaterViz/tree/ncrn_refactor</a>.
+</p>
+
+<hr style="margin: 10px 40px;" style="margin: 10px 40px;">
+
+<h3 style="margin: 10px 40px;">Methods</h3>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2313167">Click here to view or download NCRN's water quality methods</a></p>
+
+<h4 style="margin: 10px 40px;">Sampling locations</h4>
+<p style="margin: 10px 40px;">As of January 2025, NCRN monitors water quality at 37 sites in ten National Parks in the National Capital Region. NCRN has added and removed sites since 2005. <a href="https://irma.nps.gov/DataStore/Reference/Profile/2313167">Tables 2,3, and 4 in NCRN's Water Chemistry and Quantity Monitoring Protocol details changes to sampling sites through time.</a></p>
+<p style="margin: 10px 40px;">Each NCRN water quality site meets these criteria:</p>
+<ol style="margin: 10px 40px;">
+  <li>Approved by the Park</li>
+  <li>1<sup>st</sup> - 4<sup>th</sup> Strahler order freshwater stream</li>
+  <li>Wadeable</li>
+  <li>Non-tidal</li>
+  <li>Has at least 250 meters of stream reach in Park boundaries</li>
+  <li>Is positioned downstream in its reach (e.g., before a confluence or near the Park boundary)</li>
+  <li>Safe from hazards like depth, velocity, obstructions</li>
+  <li>Perrenial; has sufficient year-round water depth and flow to collect a discharge measurement</li>
+  <li>Safe, reasonable, and legal to access without undue travel or easement</li>
+</ol>
+
+<h4 style="margin: 10px 40px;">Sampling frequency</h4>
+<p style="margin: 10px 40px;">NCRN began monitoring water quality in 2005 and monitoring is ongoing. NCRN has changed sampling frequency since 2005. <a href="https://irma.nps.gov/DataStore/Reference/Profile/2313167">Section 2.5 and 2.6 in NCRN's Water Chemistry and Quantity Monitoring Protocol details changes to sampling frequency.</a></p>
+<li style="margin: 0px 40px;">Since October 2017, NCRN has monitored water quality bi-monthly (i.e., once every two months) at each site</li>
+<li style="margin: 0px 40px;">From October 2013 to October 2017, NCRN monitored water quality quarterly (i.e., once every three months) at each site</li>
+<li style="margin: 0px 40px;">From May 2005 to October 2013, NCRN monitored water quality monthly (i.e., once each month) at each site</li>
+
+<h4 style="margin: 10px 40px;">Parameters</h4>
+<p style="margin: 10px 40px;">As of January 2025, NCRN monitors 15 numeric water quality parameters. NCRN also collects text and categorical data (e.g., epilithic algae color) which are present in <a href="https://irma.nps.gov/DataStore/Reference/Profile/2309154">the full dataset</a> but absent from this website. Over time, NCRN has added and removed parameters from its monitoring protocol. <a href="https://irma.nps.gov/DataStore/Reference/Profile/2313167">Table 5 in NCRN's Water Chemistry and Quantity Monitoring Protocol details changes to sampling parameters.</a> </p>
+<ol style="margin: 10px 40px;">
+  <li>Water temperature</li>
+  <li>Air pressure (i.e. barometric pressure)</li>
+  <li>Dissolved Oxygen concentration (DO concentration mg/L)</li>
+  <li>Dissolved Oxygen saturation (DO saturation %)</li>
+  <li>Specific Conductance</li>
+  <li>Conductivity</li>
+  <li>Salinity</li>
+  <li>pH</li>
+  <li>Acid Neutralizing Capacity (ANC)</li>
+  <li>Total Nitrogen concentration (TN)</li>
+  <li>Total Phosphorus concentration (TP)</li>
+  <li>Discharge</li>
+  <li>Wetted width (stream width across stream crossection where discharge was measured)</li>
+  <li>Stream Velocity (average water velocity across stream crossection where discharge was measured)</li>
+  <li>Depth (average water depth across stream crossection where discharge was measured)</li>
+</ol>
+
+<h4 style="margin: 10px 40px;">Data quality</h4>
+<ol style="margin: 10px 40px;">
+  <li>Completeness
+      <ul style="margin: 10px 40px;">
+        <li>NCRN's active sites and parameters are included in this website</li>
+        <li>Retired monitoring sites were excluded from this website. NCRN retires sites when they stop fitting our protocol, such as when a stream that used to flow year-round becomes seasonally dry.</li>
+        <li>Retired monitoring parameters were excluded from this website. NCRN retires parameters as needed. For example, NCRN stopped measuring Total Dissolved Nitrogen concentration in 2018 and immediately began collecting Total Nitrogen concentration instead.</li>
+        <li>Categorical and text parameters, like descriptions of stream stage and epilithic algae, were excluded from this website</li>
+        <li><a href="https://irma.nps.gov/DataStore/Reference/Profile/2309154">NCRN's full water quality dataset, including retired sites and parameters, is available for download from NPS DataStore</a></li>
+      </ul>
+  </li>
+  <li>Accuracy
+    <ul style="margin: 10px 40px;">
+        <li>NCRN calibrates field instruments (e.g., YSI ProDSS handheld) to manufacturer specifications before each site visit</li>
+        <li>A certified, third-party laboratory (UMCES Appalachian Lab) measures NCRN's water chemistry results (ANC, TP, TN)</li>
+      </ul>
+  </li>
+  <li>Validity
+    <ul style="margin: 10px 40px;">
+        <li>NCRN's data governance procedures ensure measurements, parameters, units, and location attributes are consistent through time and within-and-among sites</li>
+    </ul>
+  </li>
+</ol>
+
+<hr style="margin: 10px 40px;">
+
+<h3 style="margin: 10px 40px;">Bibliography</h3>
+<h4 style="margin: 10px 40px;">References</h4>
+
+<p style="margin: 10px 40px;">De Cicco, L.A., Hirsch, R.M., Lorenz, D., Watkins, W.D., Johnson, M., Blodgett, D.L., Hinman, E.D., Zemmels, J., 2026, dataRetrieval: R packages for discovering and retrieving water data available from Federal hydrologic web services, v.2.7.24, doi:10.5066/P9X4L3GE</p>
+<p style="margin: 10px 40px;">Water Quality Portal. Washington (DC): National Water Quality Monitoring Council, United States Geological Survey (USGS), Environmental Protection Agency (EPA); 2021. https://doi.org/10.5066/P9QRKUVJ.</p>
+
+<h4 style="margin: 10px 40px;">NCRN Water Quality Reports</h4>
+
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2233434">Weaver J and Nortrup M. 2016. National Capital Region Network Resource Brief: Specific Conductance in Streams. National Capital Region Network, Inventory & Monitoring https://irma.nps.gov/DataStore/Reference/Profile/2233434</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2210069">Nortrup M. 2014. National Capital Region Network Resource Brief: Water Monitoring. National Capital Region Network, Inventory & Monitoring https://irma.nps.gov/DataStore/Reference/Profile/2210069</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2190400">Pieper JM and Others. 2012. National Capital Region Network FY 2010 water resources monitoring data report:: water chemistry, nutrient dynamics, and surface water dynamics vital signs. Natural Resource Data Series. NPS/NCRN/NRDS—2012/381. National Park Service. Fort Collins, Colorado https://irma.nps.gov/DataStore/Reference/Profile/2190400</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2175663">Schmit JP. 2011. Annual and seasonal trends in discharge of National Capital Region streams. Natural Resource Technical Report: Northeast Region. NPS/NCRN/NRTR—2011/488. Fort Collins, Colorado https://irma.nps.gov/DataStore/Reference/Profile/2175663</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2166098">Norris M and Pieper J. 2010. National Capital Region Network 2007- 2008 water resources monitoring data report: Water chemistry, nutrient dynamics, and surface water dynamics vital signs. Natural Resource Data Series. NPS/NCR/NCRN/NRDS—2010/105. National Park Service, Natural Resource Program Center. Fort Collins, Colorado https://irma.nps.gov/DataStore/Reference/Profile/2166098</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2188684">Nortrup M and Watts T. 2010. National Capital Region Network Resource Brief: Freshwater Sponges. National Capital Region Network, Inventory & Monitoring https://irma.nps.gov/DataStore/Reference/Profile/2188684</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2165403">Norris M and Pieper J. 2010. National Capital Region Network 2009 water resources monitoring data report: water chemistry, nutrient dynamics, and surface water dynamics vital signs. Natural Resource Data Series. NPS/NCR/NCRN/NRDS—2010/095. Natural Resource Program Center. Fort Collins, Colorado https://irma.nps.gov/DataStore/Reference/Profile/2165403</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/2188734">Norris M. 2009. National Capital Region Network Resource Brief: Water Monitoring Program. National Capital Region Network, Inventory & Monitoring https://irma.nps.gov/DataStore/Reference/Profile/2188734</a></p>
+<p style="margin: 10px 40px;"><a href="https://irma.nps.gov/DataStore/Reference/Profile/652224">Norris M and Others. 2007. National Capital Region Network 2005 - 2006 Water Resources Monitoring Report. Natural Resource Technical Report. NPS/NCRN/NRTR—2007/066. Natural Resource Program Center. Fort Collins, Colorado https://irma.nps.gov/DataStore/Reference/Profile/652224</a></p>
+
+<hr style="margin: 10px 40px;">
+
+</body>
+</html>

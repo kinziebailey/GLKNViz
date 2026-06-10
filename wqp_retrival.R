@@ -32,34 +32,34 @@ thresholds <- read_csv("./data/thresholds.csv")
 
 # Getting WQP Data ---- 
 # THIS IS EXTREMELY SLOW
-# parks <- sort(unique(glkn_stations$Park))
-# 
-# WQPViews <- lapply(parks, function(park){
-#   
-#   sites <- glkn_stations |>
-#     dplyr::filter(Park == park) |>
-#     dplyr::pull(MonitoringLocationIdentifier)
-#   
-#   message("\nPulling WQP data for ", park)
-#   
-#   # Create progress bar for THIS park
-#   pb <- txtProgressBar(min = 0, max = length(sites), style = 3)
-#   
-#   # Download each site with progress bar
-#   dat_list <- vector("list", length(sites))
-#   
-#   for (i in seq_along(sites)) {
-#     dat_list[[i]] <- suppressMessages(readWQPdata(siteid = sites[i])) |>
-#       dplyr::mutate(ResultMeasureValue = as.character(ResultMeasureValue))
-#     
-#     setTxtProgressBar(pb, i)
-#   }
-#   
-#   close(pb)
-#   
-#   # Combine all sites for this park
-#   dplyr::bind_rows(dat_list)
-# })
+parks <- sort(unique(glkn_stations$Park))
+
+WQPViews <- lapply(parks, function(park){
+
+  sites <- glkn_stations |>
+    dplyr::filter(Park == park) |>
+    dplyr::pull(MonitoringLocationIdentifier)
+
+  message("\nPulling WQP data for ", park)
+
+  # Create progress bar for THIS park
+  pb <- txtProgressBar(min = 0, max = length(sites), style = 3)
+
+  # Download each site with progress bar
+  dat_list <- vector("list", length(sites))
+
+  for (i in seq_along(sites)) {
+    dat_list[[i]] <- suppressMessages(readWQPdata(siteid = sites[i])) |>
+      dplyr::mutate(ResultMeasureValue = as.character(ResultMeasureValue))
+
+    setTxtProgressBar(pb, i)
+  }
+
+  close(pb)
+
+  # Combine all sites for this park
+  dplyr::bind_rows(dat_list)
+})
 # 
 # # Combine all parks
 # wqp_data_all <- dplyr::bind_rows(WQPViews)
@@ -88,7 +88,7 @@ WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
     },
     # error: park failed to download
     error = function(err){
-      warning("ERROR: ", conitionMessages(err), " while pulling for ", park)
+      warning("ERROR: ", conitionMessage(err), " while pulling for ", park)
       return(NULL)
     }
     )
@@ -161,7 +161,8 @@ wqp_data <- wqp_data1 |>
   left_join(chr_lookup,
             by = "CharacteristicName") |> 
   # adding year for cleaning purposes
-  mutate(year = format(ActivityStartDate, "%Y")) |>
+  mutate(year = format(ActivityEndDate, "%Y"),
+         month = format(ActivityEndDate, "%m")) |>
   # filtering by sites that have >= 5 years of data
   filter(n_distinct(year) >= 5,
          .by = c(MonitoringLocationIdentifier,
@@ -173,6 +174,7 @@ wqp_data <- wqp_data1 |>
          ActivityStartDate,
          ActivityEndDate,
          year,
+         month,
          ActivityStartTime.TimeZoneCode,
          ActivityDepthHeightMeasure.MeasureValue,
          ActivityDepthHeightMeasure.MeasureUnitCode,

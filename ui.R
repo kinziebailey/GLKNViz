@@ -77,6 +77,14 @@ ui <- shinyUI(
              tabPanel(
                "Time Series",
                plotOutput("TimeSeriesPlot")
+             ),
+             tabPanel(
+              "Profile Plots",
+              plotOutput("ProfilePlot")
+             ),
+             tabPanel(
+               "Boxplot",
+               plotOutput("BoxPlot")
              )
            )
            

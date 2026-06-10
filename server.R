@@ -124,9 +124,9 @@ ts_data <- reactive({
   
   # continue if data exists
   series_df <- series_df1 |> 
-    summarise(value = mean(value, na.rm = TRUE),
-              .by = c("MonitoringLocationName",
-                      "end_date"))
+    dplyr::summarise(value = mean(value, na.rm = TRUE),
+                     .by = c("MonitoringLocationName",
+                             "end_date"))
 }) 
 
 ## Render Time Series ----
@@ -143,4 +143,71 @@ output$TimeSeriesPlot <- renderPlot({
     theme_minimal()
 })
 
+# Depth Profile Plot ----
+
+## Reactive for depth profiles ----
+profile_data <- reactive({
+
+  # data wrangling 
+  profile_df1 <- user_data()
+  
+  # Warning if no data
+  shiny::validate(
+    shiny::need(nrow(profile_df1) > 0,
+                "No data available for the selected Park / Site / Parameter"))
+  
+  # continue if data exists 
+  profile_df <- profile_df1 |> 
+    dplyr::filter(year %in% lubridate::year(end_date)) |> 
+    dplyr::mutate(month = lubridate::month(end_date)) |> 
+    dplyr::arrange(MonitoringLocationName,
+                   month, 
+                   value)
+})
+
+
+## Render Depth Profile Plot ----
+output$ProfilePlot <- renderPlot({
+  
+  # plotting
+  ggplot(data = profile_data(),
+         aes(x = value,
+             y = depth,
+             color = MonitoringLocationName,
+             shape = MonitoringLocationName)) +
+    geom_path() + 
+    geom_point() +
+    facet_wrap(~month) +
+    theme_minimal()
+})
+
+# Boxplots ----
+
+## Reactive for box plots ----
+boxplot_data <- reactive({
+  
+  # data wrangling 
+  boxplot_df1 <- user_data()
+  
+  # Warning if no data
+  shiny::validate(
+    shiny::need(nrow(boxplot_df1) > 0,
+                "No data available for the selected Park / Site / Parameter"))
+  
+  # continue if data exists
+  boxplot_df <- boxplot_df1 
+})
+
+## Render Boxplot ----
+
+output$BoxPlot <- renderPlot({
+  
+  # plotting 
+  ggplot(data = boxplot_data(),
+         aes(x = factor(month),
+             y = value,
+             fill = MonitoringLocationName)) + 
+    geom_boxplot() + 
+    theme_minimal()
+})
 }

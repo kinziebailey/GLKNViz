@@ -1,0 +1,27 @@
+/* Customize fonts */
+body, label, input, button, select { 
+    font-family: 'Helvetica Neue', Helvetica;
+    font-weight: 200;
+    font-size: 12px;
+  }
+  
+h1, h2, h3, h4 { 
+  font-weight: 400; 
+} 
+
+/* Fixing dropdowns over map*/
+
+/* first drop down*/
+.selectize-control {
+  z-index: 9999;
+}
+
+/* second drop down*/
+.selectize-control {
+  z-index: 999;
+}
+
+/* third drop down*/
+.selectize-control {
+  z-index: 999;
+}

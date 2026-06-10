@@ -33,3 +33,16 @@ NPSAttrib <- HTML("<a href='https://www.nps.gov/npmap/disclaimer/'>Disclaimer</a
       <a class='improve-park-tiles' 
       href='http://insidemaps.nps.gov/places/editor/#background=mapbox-satellite&map=4/-95.97656/39.02772&overlays=park-tiles-overlay'
       target='_blank'>Improve Park Tiles</a>")
+
+## Loading Modules ----
+### Time Series
+source("modules/timeseries_mod.R")
+
+### Depth Profiles
+source("modules/depthprofile_mod.R")
+
+### Boxplots 
+source("modules/boxplot_mod.R")
+
+### Correlation Plot 
+source("modules/correlation_mod.R")

@@ -9,6 +9,10 @@ library(leaflet) # interactive maps
 
 ui <- shinyUI(
   fluidPage(
+    ## formatting ----
+    # tags$link(rel = "stylesheet",
+    #           type = "text/css",
+    #           href = "styles.css"),
     
     ## Page Header ----
     tags$header(
@@ -26,65 +30,65 @@ ui <- shinyUI(
     ),
     
   fluidRow(
+    
     ## Left Column ----
-    ### Map ----
     column(
       width = 3, # 3/12 of the page
+      ### Park ----
+      selectInput(
+        "park",
+        "Park",
+        choices = c("Choose Park" = "",
+                    sort(unique(wqp_data$Park))),
+        selected = ""
+      ),
+      ### Site ---
+      selectInput(
+        "station",
+        "Site",
+        choices = c("Choose Site" = "",
+                    sort(unique(wqp_data$MonitoringLocationName))),
+        selected = "",
+        multiple = TRUE
+      ),
+      ### Map ----
       leafletOutput("map",
-                    height = "85vh")
+                    height = "400px")
     ),
     
     # Right Column ----
     column(width = 9, # 9/12 of the page
-           ## User Controls ----
-           ### Park ----
-           selectInput(
-             "park",
-             "Park",
-             choices = c("Choose Park" = "",
-                         sort(unique(wqp_data$Park))),
-             selected = ""
-           ),
-           ### Site ---
-           selectInput(
-             "station",
-             "Site",
-             choices = c("Choose Site" = "",
-                         sort(unique(wqp_data$MonitoringLocationName))),
-             selected = ""
-           ),
-           ### Param ----
-           selectInput(
-             "parameter",
-             "Parameter",
-             choices = c("Choose Parameter" = "",
-                         sort(unique(wqp_data$CharacteristicName))),
-             selected = ""
-           ),
-           ### Date Range ----
-           dateRangeInput(
-             "date_range",
-             "Date",
-             start = min(wqp_data$end_date, na.rm = TRUE),
-             end = max(wqp_data$end_date, na.rm = TRUE)
-           ),
            ## Instructions Panel ----
            tabsetPanel(
              tabPanel(
-             "Instructions",
-             includeHTML("www/Instruction.html")
+               # Tab Name
+               h4("Instructions"),
+               # Instruction HTML
+               includeHTML("www/Instruction.html")
              ),
              tabPanel(
-               "Time Series",
-               plotOutput("TimeSeriesPlot")
+               # Tab Name
+               h4("Time Series"),
+               # timeseries_mod.R
+               ts_ui("ts")
              ),
              tabPanel(
-              "Profile Plots",
-              plotOutput("ProfilePlot")
+               # Tab Name
+              h4("Profile Plots"),
+              # depthprofile_mod.R
+              dp_ui("dp")
              ),
              tabPanel(
-               "Boxplot",
-               plotOutput("BoxPlot")
+               # Tab Name
+               h4("Boxplot"),
+               # boxplot_mod.R
+               bp_ui("bp")
+             ),
+             tabPanel(
+               # Tab Name
+               h4("Correlation Plot"),
+               # correlation_mod.R
+               cp_ui("cp")
              )
            )
            

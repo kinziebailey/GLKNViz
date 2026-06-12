@@ -15,8 +15,7 @@ dp_ui <- function(id){
                     "pH" = "pH",
                     "Specific Conductivity" = "Specific conductance",
                     "Water Temperature" = "Temperature, water")),
-      selected = "",
-      multiple = TRUE
+      selected = ""
     ),
     # Year Selector
     selectInput(

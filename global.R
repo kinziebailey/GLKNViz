@@ -46,3 +46,6 @@ source("modules/boxplot_mod.R")
 
 ### Correlation Plot 
 source("modules/correlation_mod.R")
+
+### Details Tables 
+source("modules/timeseries_details_mod.R")

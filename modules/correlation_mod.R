@@ -73,6 +73,11 @@ cp_server <- function(id, user_data){
       
       # continue if data exists
       correlation_df <- correlation_df1 |> 
+        # averaging if multiple values per sample period
+        dplyr::summarise(value = mean(value, na.rm = TRUE),
+                         .by = c(end_date,
+                                 MonitoringLocationName, 
+                                 CharacteristicName)) |> 
         dplyr::filter(CharacteristicName %in% c(input$select_param1,
                                                 input$select_param2)) |> 
         tidyr::pivot_wider(names_from = CharacteristicName,
@@ -89,6 +94,9 @@ cp_server <- function(id, user_data){
                  y = .data[[input$select_param2]],
                  color = MonitoringLocationName)) +
         geom_point() + 
+        geom_smooth(method= lm,
+                    se = FALSE) +
+        stat_poly_eq(use_label(c("eq", "R2"))) +
         theme_minimal()
     })
   })

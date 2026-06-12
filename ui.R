@@ -70,7 +70,8 @@ ui <- shinyUI(
                # Tab Name
                h4("Time Series"),
                # timeseries_mod.R
-               ts_ui("ts")
+               ts_ui("ts"),
+               details_ui("details")
              ),
              tabPanel(
                # Tab Name

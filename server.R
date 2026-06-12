@@ -35,29 +35,15 @@ user_data <- reactive({
   wqp_data |> 
     filter(Park %in% input$park,
            MonitoringLocationName %in% input$station)
-           # ,
-           # CharacteristicName == input$parameter)
 })
-
-## Time Series mod activation ----
-  ts_server("ts", user_data)
-
-## Depth Profile mod activation ----
-  dp_server("dp", user_data)
-
-## Boxplot mod activation ----
-  bp_server("bp", user_data)
-
-## Correlation mod activation ----
-cp_server("cp", user_data)
 
 # Map Reactive ----
 observeEvent(input$station, {
   req(input$station)
-  
+
   site <- wqp_data |>
     filter(MonitoringLocationName %in% input$station)
-  
+
   leafletProxy("map") |>
     setView(
       lng = site$lon[1],
@@ -74,18 +60,36 @@ observeEvent(input$station, {
 
 # Map ----
 output$map <- leaflet::renderLeaflet({
-  
+
   ## Initial map ----
   leaflet(wqp_data) |>
-    addTiles() |> 
+    addTiles() |>
     addCircleMarkers(lng = ~lon,
                      lat = ~lat,
                      radius = 5,
-                     color = "blue") |> 
+                     color = "blue") |>
     fitBounds(lng1 = min(wqp_data$lon, na.rm = TRUE),
               lat1 = min(wqp_data$lat, na.rm = TRUE),
               lng2 = max(wqp_data$lon, na.rm = TRUE),
               lat2 = max(wqp_data$lat, na.rm = TRUE))
 })
+
+## Time Series mod activation ----
+  ## Plot
+  ts_server("ts", user_data)
+  
+  ## Tables 
+  details_server("details", 
+                 data = ts$timeseries_data)
+
+
+## Depth Profile mod activation ----
+  dp_server("dp", user_data)
+
+## Boxplot mod activation ----
+  bp_server("bp", user_data)
+
+## Correlation mod activation ----
+cp_server("cp", user_data)
 
 }

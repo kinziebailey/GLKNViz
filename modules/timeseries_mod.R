@@ -1,5 +1,6 @@
 # Module for the Timeseries plot ----
 
+# User Interface ----
 ts_ui <- function(id){
   
   ns <- NS(id) # creating a namespace
@@ -33,7 +34,7 @@ ts_ui <- function(id){
   )
 }
 
-## Server for time series ----
+## Server for timeseries plot ----
 ts_server <- function(id, user_data){
   
   ## Loading module ----
@@ -73,10 +74,20 @@ ts_server <- function(id, user_data){
         # filtering date
         dplyr::filter(end_date >= input$date_range[1],
                       end_date <= input$date_range[2]) |> 
-        # avg data 
-        dplyr::summarise(value = mean(value, na.rm = TRUE),
-                         .by = c("MonitoringLocationName",
-                                 "end_date"))
+        # filtering depth for averaging
+        dplyr::filter(depth >= -2 | is.na(depth)) |>
+        # summarise data 
+        dplyr::summarise(value = case_when(n() == 1 ~ value[1],
+                                           n() == 2 ~ mean(value, na.rm = TRUE),
+                                           n() >= 3 ~ median(value, na.rm = TRUE)),
+                         .by = c("Park",
+                                 "MonitoringLocationName",
+                                 "CharacteristicName",
+                                 "end_date")) |>
+        dplyr::arrange(Park,
+                       MonitoringLocationName,
+                       end_date,
+                       CharacteristicName)
     }) 
     
     ### Render Time Series ----
@@ -92,5 +103,8 @@ ts_server <- function(id, user_data){
         geom_line() + 
         theme_minimal()
     })
+    
+    # returning data details 
+    return(list(timeseries_data = timeseries_data))
   })
 }

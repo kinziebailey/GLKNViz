@@ -81,19 +81,19 @@ WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
     {
       suppressMessages(readWQPdata(siteid = sites))
     },
-    # warning: no data for site, still returns partial data
+    # warning, still returns partial data
     warning = function(mess){
       warning("Warning: ", conditionMessage(mess), " while pulling for ", park)
               suppressMessages(readWQPdata(siteid = sites))
     },
-    # error: park failed to download
+    # error, return null for park
     error = function(err){
       warning("ERROR: ", conitionMessage(err), " while pulling for ", park)
       return(NULL)
     }
     )
   
-  # Standardize column type 
+  # make ResultMeasureValue all chr
   if(!is.null(dat)){
   dat <- dat |> 
     dplyr::mutate(ResultMeasureValue = as.character(ResultMeasureValue))
@@ -134,14 +134,48 @@ wqp_data1 <- wqp_data_all |>
          ActivityDepthHeightMeasure.MeasureValue = -abs(ActivityDepthHeightMeasure.MeasureValue),
          ResultMeasureValue = as.numeric(ResultMeasureValue))
 
-## Edit column names to match NCRN data ---- 
-wqp_data <- wqp_data1 |>
+## adding station data ----
+wqp_data_stations <- wqp_data1 |>
   # adding station data
-  left_join(glkn_stations,
-            by = "MonitoringLocationIdentifier") |>
-  # adding thresholds
-  left_join(thresholds,
-            by = c("Park", "CharacteristicName")) |>
+  left_join(glkn_stations)
+
+## adding threshold data ----
+
+# thresholds with MLN
+thresh_mln <- thresholds |> 
+  filter(!is.na(MonitoringLocationName))
+
+# thresholds without MLN
+thresh_no <- thresholds |> 
+  filter(is.na(MonitoringLocationName)) |> 
+  select(-MonitoringLocationName)
+
+### joining thresholds that have MonitoringLocationName
+wqp_data_ml <- wqp_data_stations |>
+  left_join(thresh_mln)
+
+### joining thresholds that have no MonitoringLocationName
+wqp_data_thresh <- wqp_data_ml |>
+  left_join(thresh_no,
+            by = c("Park",
+                   "CharacteristicName")) |>
+  mutate(LowerPoint = coalesce(LowerPoint.x,
+                               LowerPoint.y),
+         UpperPoint = coalesce(UpperPoint.x,
+                               UpperPoint.y),
+         LowerDescription = coalesce(LowerDescription.x,
+                                     LowerDescription.y),
+         UpperDescription = coalesce(UpperDescription.x,
+                                     UpperDescription.y),
+         Reference = coalesce(Reference.x,
+                              Reference.y),
+         Notes = coalesce(Notes.x,
+                          Notes.y)) |> 
+  select(-ends_with(".x"),
+         -ends_with(".y"))
+
+## Adding characteristicNames and cleaning up columns ----
+wqp_data <- wqp_data_thresh |> 
   # adding char names
   left_join(chr_lookup,
             by = "CharacteristicName") |> 

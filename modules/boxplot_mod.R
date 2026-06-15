@@ -10,7 +10,7 @@ bp_ui <- function(id){
       inputId = ns("select_param"),
       label = "Select Parameter",
       choices = c("Choose Parameter" = "",
-                  sort(unique(wqp_data$CharacteristicName))),
+                  sort(unique(wqp_data$PickListName))),
       selected = "",
     ),
     # Date Format Grouping Selector
@@ -55,6 +55,7 @@ bp_server <- function(id, user_data){
     ### Reactive for box plots ----
     boxplot_data <- reactive({
       
+      # required data
       req(input$select_param, input$date_grouping)
       
       # data wrangling 
@@ -72,7 +73,6 @@ bp_server <- function(id, user_data){
     })
     
     ## Render Boxplot ----
-    
     output$BoxPlot <- renderPlot({
       
       # plotting 
@@ -83,5 +83,8 @@ bp_server <- function(id, user_data){
         geom_boxplot() + 
         theme_minimal()
     })
+    
+    # returing data details
+    return(list(boxplot_data = boxplot_data))
   })
 }

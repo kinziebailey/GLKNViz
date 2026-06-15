@@ -10,10 +10,10 @@ dp_ui <- function(id){
       inputId = ns("select_param"),
       label = "Select Parameter",
       choices = c("Choose Parameter" = "",
-                  c("Dissolved oxygen (DO)" = "Dissolved oxygen (DO)",
+                  c("Dissolved Oxygen (DO)" = "Dissolved oxygen (DO)",
                     "Dissolved Oxygen Saturation" = "Dissolved oxygen saturation",
                     "pH" = "pH",
-                    "Specific Conductivity" = "Specific conductance",
+                    "Specific Conductance" = "Specific conductance",
                     "Water Temperature" = "Temperature, water")),
       selected = ""
     ),
@@ -31,7 +31,7 @@ dp_ui <- function(id){
       label = "About Depth Profiles",
       class = "btn btn-info"
     ),
-    plotOutput(ns("DepthProfilePlot"))
+    plotlyOutput(ns("DepthProfilePlot"))
   )
 }
 
@@ -42,7 +42,7 @@ dp_server <- function(id, user_data){
   moduleServer(id, function(input, output, session){
     
     ### About Modal ----
-    observeEvent(input$about_ts, {
+    observeEvent(input$about_dp, {
       showModal(
         modalDialog(title = "About Depth Profiles", 
                     footer = modalButton("Close"),
@@ -57,7 +57,7 @@ dp_server <- function(id, user_data){
     ## Reactive for depth profiles ----
     profile_data <- reactive({
       
-      # require date
+      # required date
       req(input$select_param, input$select_year)
       
       # data wrangling 
@@ -81,20 +81,30 @@ dp_server <- function(id, user_data){
     })
     
     ## Render Depth Profile Plot ----
-    output$DepthProfilePlot <- renderPlot({
+    output$DepthProfilePlot <- plotly::renderPlotly({
       
       # plotting
-      ggplot(data = profile_data(),
-             aes(x = value,
-                 y = depth,
-                 color = MonitoringLocationName,
-                 shape = MonitoringLocationName)) +
+      ggdepthprofile <- ggplot(data = profile_data(),
+                               aes(x = value,
+                                   y = depth,
+                                   color = MonitoringLocationName,
+                                   shape = MonitoringLocationName)) +
         geom_path() + 
         geom_point() +
+        labs(x = unique(profile_data()$AxisName),
+             y = "Depth (m)") +
         facet_grid(row = vars(year),
-                   cols = vars(month)) +
+                   cols = vars(month_name)) +
         # facet_wrap(~month) +
         theme_minimal()
+      
+      ggplotly(ggdepthprofile) |> 
+        style(hovertemplate = paste0("<br>Site: ", profile_data()$MonitoringLocationName,
+                                     "<br>Date: ", profile_data()$end_date,
+                                     "<br>Value: ", profile_data()$value))
     })
+    
+    # returing data details 
+    return(list(depthprofile_data = profile_data))
   })
 }

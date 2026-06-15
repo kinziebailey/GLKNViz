@@ -7,89 +7,105 @@ library(tidyr)
 
 # Server ----
 server <- function(input, output, session){
-
-# Update UI Inputs ----
-
-## Site ----
-observeEvent(input$park, {
-  req(input$park != "")
   
-  sites <- wqp_data |> 
-    filter(Park %in% input$park) |> 
-    pull(MonitoringLocationName) |> 
-    unique() |> 
-    sort()
+  # Update UI Inputs ----
   
-  updateSelectInput(session,
-                    "station",
-                    choices = c("Pick site" = "",
-                                sites),
-                    selected = "")
-})
-
-# Data Reactive ----
-user_data <- reactive({
-  # required
-  req(input$park, input$station)
+  ## Site ----
+  observeEvent(input$park, {
+    req(input$park != "")
+    
+    sites <- wqp_data |> 
+      filter(Park %in% input$park) |> 
+      pull(MonitoringLocationName) |> 
+      unique() |> 
+      sort()
+    
+    updateSelectInput(session,
+                      "station",
+                      choices = c("Pick site" = "",
+                                  sites),
+                      selected = "")
+  })
   
-  wqp_data |> 
-    filter(Park %in% input$park,
-           MonitoringLocationName %in% input$station)
-})
-
-# Map Reactive ----
-observeEvent(input$station, {
-  req(input$station)
-
-  site <- wqp_data |>
-    filter(MonitoringLocationName %in% input$station)
-
-  leafletProxy("map") |>
-    setView(
-      lng = site$lon[1],
-      lat = site$lat[1],
-      zoom = 12
-    ) |>
-    clearPopups() |>
-    addPopups(
-      lng = site$lon[1],
-      lat = site$lat[1],
-      popup = site$MonitoringLocationName[1]
-    )
-})
-
-# Map ----
-output$map <- leaflet::renderLeaflet({
-
-  ## Initial map ----
-  leaflet(wqp_data) |>
-    addTiles() |>
-    addCircleMarkers(lng = ~lon,
-                     lat = ~lat,
-                     radius = 5,
-                     color = "blue") |>
-    fitBounds(lng1 = min(wqp_data$lon, na.rm = TRUE),
-              lat1 = min(wqp_data$lat, na.rm = TRUE),
-              lng2 = max(wqp_data$lon, na.rm = TRUE),
-              lat2 = max(wqp_data$lat, na.rm = TRUE))
-})
-
-## Time Series mod activation ----
+  # Data Reactive ----
+  user_data <- reactive({
+    # required
+    req(input$park, input$station)
+    
+    wqp_data |> 
+      filter(Park %in% input$park,
+             MonitoringLocationName %in% input$station)
+  })
+  
+  # Map Reactive ----
+  observeEvent(input$station, {
+    req(input$station)
+    
+    site <- wqp_data |>
+      filter(MonitoringLocationName %in% input$station)
+    
+    leafletProxy("map") |>
+      setView(
+        lng = site$lon[1],
+        lat = site$lat[1],
+        zoom = 12
+      ) |>
+      clearPopups() |>
+      addPopups(
+        lng = site$lon[1],
+        lat = site$lat[1],
+        popup = site$MonitoringLocationName[1]
+      )
+  })
+  
+  # Map ----
+  output$map <- leaflet::renderLeaflet({
+    
+    ## Initial map ----
+    leaflet(wqp_data) |>
+      addTiles() |>
+      addCircleMarkers(lng = ~lon,
+                       lat = ~lat,
+                       radius = 5,
+                       color = "blue") |>
+      fitBounds(lng1 = min(wqp_data$lon, na.rm = TRUE),
+                lat1 = min(wqp_data$lat, na.rm = TRUE),
+                lng2 = max(wqp_data$lon, na.rm = TRUE),
+                lat2 = max(wqp_data$lat, na.rm = TRUE))
+  })
+  
+  # Parent Servers ----
+  ## Time Series mod activation ----
   ## Plot
-  ts_server("ts", user_data)
+  ts <- ts_server("ts", user_data)
   
   ## Tables 
-  details_server("details", 
-                 data = ts$timeseries_data)
-
-
-## Depth Profile mod activation ----
-  dp_server("dp", user_data)
-
-## Boxplot mod activation ----
-  bp_server("bp", user_data)
-
-## Correlation mod activation ----
-cp_server("cp", user_data)
-
+  details_server("details_ts", 
+                 data_from = ts$timeseries_data)
+  
+  
+  ## Depth Profile mod activation ----
+  ## Plot
+  dp <- dp_server("dp", user_data)
+  
+  ## Tables 
+  details_server("details_dp", 
+                 data_from = dp$depthprofile_data)
+  
+  ## Boxplot mod activation ----
+  ## Plot
+  bp <- bp_server("bp", user_data)
+  
+  ## Tables
+  details_server("details_bp",
+                 data_from = bp$boxplot_data)
+  
+  ## Correlation mod activation ----
+  ## Plot
+  cp <- cp_server("cp", user_data)
+  
+  ## Tables
+  details_server("details_cp",
+                 data_from = cp$correlation_long)
+  
 }

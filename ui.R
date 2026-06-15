@@ -29,70 +29,73 @@ ui <- shinyUI(
       alt='Water Quality Visualizer'> </a> GLKN Water Quality Data Visualizer</span>")
     ),
     
-  fluidRow(
-    
-    ## Left Column ----
-    column(
-      width = 3, # 3/12 of the page
-      ### Park ----
-      selectInput(
-        "park",
-        "Park",
-        choices = c("Choose Park" = "",
-                    sort(unique(wqp_data$Park))),
-        selected = ""
+    fluidRow(
+      
+      ## Left Column ----
+      column(
+        width = 3, # 3/12 of the page
+        ### Park ----
+        selectInput(
+          "park",
+          "Park",
+          choices = c("Choose Park" = "",
+                      sort(unique(wqp_data$Park))),
+          selected = ""
+        ),
+        ### Site ---
+        selectInput(
+          "station",
+          "Site",
+          choices = c("Choose Site" = "",
+                      sort(unique(wqp_data$MonitoringLocationName))),
+          selected = "",
+          multiple = TRUE
+        ),
+        ### Map ----
+        leafletOutput("map",
+                      height = "400px")
       ),
-      ### Site ---
-      selectInput(
-        "station",
-        "Site",
-        choices = c("Choose Site" = "",
-                    sort(unique(wqp_data$MonitoringLocationName))),
-        selected = "",
-        multiple = TRUE
-      ),
-      ### Map ----
-      leafletOutput("map",
-                    height = "400px")
-    ),
-    
-    # Right Column ----
-    column(width = 9, # 9/12 of the page
-           ## Instructions Panel ----
-           tabsetPanel(
-             tabPanel(
-               # Tab Name
-               h4("Instructions"),
-               # Instruction HTML
-               includeHTML("www/Instruction.html")
-             ),
-             tabPanel(
-               # Tab Name
-               h4("Time Series"),
-               # timeseries_mod.R
-               ts_ui("ts"),
-               details_ui("details")
-             ),
-             tabPanel(
-               # Tab Name
-              h4("Profile Plots"),
-              # depthprofile_mod.R
-              dp_ui("dp")
-             ),
-             tabPanel(
-               # Tab Name
-               h4("Boxplot"),
-               # boxplot_mod.R
-               bp_ui("bp")
-             ),
-             tabPanel(
-               # Tab Name
-               h4("Correlation Plot"),
-               # correlation_mod.R
-               cp_ui("cp")
+      
+      # Right Column ----
+      column(width = 9, # 9/12 of the page
+             ## Instructions Panel ----
+             tabsetPanel(
+               tabPanel(
+                 # Tab Name
+                 h4("Instructions"),
+                 # Instruction HTML
+                 includeHTML("www/Instruction.html")
+               ),
+               tabPanel(
+                 # Tab Name
+                 h4("Time Series"),
+                 # timeseries_mod.R
+                 ts_ui("ts"),
+                 details_ui("details_ts")
+               ),
+               tabPanel(
+                 # Tab Name
+                 h4("Profile Plots"),
+                 # depthprofile_mod.R
+                 dp_ui("dp"),
+                 details_ui("details_dp")
+               ),
+               tabPanel(
+                 # Tab Name
+                 h4("Boxplot"),
+                 # boxplot_mod.R
+                 bp_ui("bp"),
+                 details_ui("details_bp")
+               ),
+               tabPanel(
+                 # Tab Name
+                 h4("Correlation Plot"),
+                 # correlation_mod.R
+                 cp_ui("cp"),
+                 details_ui("details_cp")
+               )
              )
-           )
-           
+             
       )
     )
   )

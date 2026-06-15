@@ -11,7 +11,7 @@ ts_ui <- function(id){
       inputId = ns("select_param"),
       label = "Select Parameter",
       choices = c("Choose Parameter" = "",
-                  sort(unique(wqp_data$CharacteristicName))),
+                  sort(unique(wqp_data$PickListName))),
       selected = ""
     ),
     # Date Range Selector 
@@ -30,7 +30,7 @@ ts_ui <- function(id){
       class = "btn btn-info"
     ),
     # Plot 
-    plotOutput(ns("TimeSeriesPlot"))
+    plotlyOutput(ns("TimeSeriesPlot"))
   )
 }
 
@@ -42,21 +42,20 @@ ts_server <- function(id, user_data){
     
     ### About Modal ----
     observeEvent(input$about_ts, {
-                 showModal(
-                   modalDialog(title = "About Time Series", 
-                               footer = modalButton("Close"),
-                   tags$iframe(src = "AboutTimeSeries.html",
-                               width = "100%",
-                               height = "600px",
-                               style = "border:none;")
-                   )
-                  )
-                 })
+      showModal(
+        modalDialog(title = "About Time Series", 
+                    footer = modalButton("Close"),
+                    tags$iframe(src = "AboutTimeSeries.html",
+                                width = "100%",
+                                height = "600px",
+                                style = "border:none;"))
+      )
+    })
     
     ### Reactive for time series ----
     timeseries_data <- reactive({
       
-      # require date
+      # required date
       req(input$select_param, input$date_range)
       
       # data wrangling
@@ -70,7 +69,7 @@ ts_server <- function(id, user_data){
       # continue if data exists
       series_df <- series_df1 |> 
         # filtering parameter
-        dplyr::filter(CharacteristicName %in% input$select_param) |> 
+        dplyr::filter(PickListName %in% input$select_param) |> 
         # filtering date
         dplyr::filter(end_date >= input$date_range[1],
                       end_date <= input$date_range[2]) |> 
@@ -80,10 +79,16 @@ ts_server <- function(id, user_data){
         dplyr::summarise(value = case_when(n() == 1 ~ value[1],
                                            n() == 2 ~ mean(value, na.rm = TRUE),
                                            n() >= 3 ~ median(value, na.rm = TRUE)),
-                         .by = c("Park",
-                                 "MonitoringLocationName",
-                                 "CharacteristicName",
-                                 "end_date")) |>
+                         .by = c(Park,
+                                 MonitoringLocationName,
+                                 CharacteristicName,
+                                 end_date,
+                                 AxisName,
+                                 lat,
+                                 lon,
+                                 value_unit,
+                                 PickListName,
+                                 AxisName)) |>
         dplyr::arrange(Park,
                        MonitoringLocationName,
                        end_date,
@@ -91,17 +96,25 @@ ts_server <- function(id, user_data){
     }) 
     
     ### Render Time Series ----
-    output$TimeSeriesPlot <- renderPlot({
+    output$TimeSeriesPlot <- plotly::renderPlotly({
       
       # plotting
-      ggplot(data = timeseries_data(),
-             aes(end_date,
-                 value,
-                 color = MonitoringLocationName,
-                 shape = MonitoringLocationName)) +
+      ggtimeseries <- ggplot(data = timeseries_data(),
+                             aes(end_date,
+                                 value,
+                                 color = MonitoringLocationName,
+                                 shape = MonitoringLocationName)) +
         geom_point() +
         geom_line() + 
+        labs(x = "Date",
+             y = unique(timeseries_data()$AxisName)) +
         theme_minimal()
+      
+      # converting to plotly
+      ggplotly(ggtimeseries) |> 
+        style(hovertemplate = paste0("<br>Site: ", timeseries_data()$MonitoringLocationName,
+                                     "<br>Date: ", timeseries_data()$end_date,
+                                     "<br>Value: ", timeseries_data()$value))
     })
     
     # returning data details 

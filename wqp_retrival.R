@@ -215,7 +215,8 @@ wqp_data <- wqp_data_thresh |>
          UpperPoint,
          LowerDescription,
          UpperDescription,
-         DisplayName)
+         PickListName,
+         AxisName)
   
 # Writing the new wqp_data ----
 write_csv(wqp_data,

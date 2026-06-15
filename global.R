@@ -4,6 +4,9 @@
 library(shiny)
 library(dplyr)
 library(tidyr)
+library(ggpmisc)
+library(plotly)
+library(lubridate)
 
 # Load data ----
 ## WQ Data ----
@@ -12,7 +15,10 @@ wqp_data1 <- read.csv('data/wqp_glkn.csv')
 ### Data wrangling ----
 wqp_data <- wqp_data1 |> 
   dplyr::mutate(start_date = as.Date(ActivityStartDate),
-                end_date = as.Date(ActivityEndDate)) |>
+                end_date = as.Date(ActivityEndDate),
+                month_name = lubridate::month(end_date,
+                                              label = TRUE,
+                                              abbr = FALSE)) |>
   dplyr::rename(depth = ActivityDepthHeightMeasure.MeasureValue,
                 depth_unit = ActivityDepthHeightMeasure.MeasureUnitCode,
                 value = ResultMeasureValue,
@@ -48,4 +54,4 @@ source("modules/boxplot_mod.R")
 source("modules/correlation_mod.R")
 
 ### Details Tables 
-source("modules/timeseries_details_mod.R")
+source("modules/details_mod.R")

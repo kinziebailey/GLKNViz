@@ -108,6 +108,7 @@ ts_server <- function(id, user_data){
         geom_line() + 
         labs(x = "Date",
              y = unique(timeseries_data()$AxisName)) +
+        scale_color_natparks_d("Yellowstone") +
         theme_minimal()
       
       # converting to plotly

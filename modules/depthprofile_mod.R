@@ -95,7 +95,7 @@ dp_server <- function(id, user_data){
              y = "Depth (m)") +
         facet_grid(row = vars(year),
                    cols = vars(month_name)) +
-        # facet_wrap(~month) +
+        scale_color_natparks_d("Yellowstone") +
         theme_minimal()
       
       ggplotly(ggdepthprofile) |> 

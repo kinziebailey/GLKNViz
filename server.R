@@ -15,8 +15,8 @@ server <- function(input, output, session){
     req(input$park != "")
     
     sites <- wqp_data |> 
-      filter(Park %in% input$park) |> 
-      pull(MonitoringLocationName) |> 
+      dplyr::filter(Park %in% input$park) |> 
+      dplyr::pull(MonitoringLocationName) |> 
       unique() |> 
       sort()
     
@@ -33,8 +33,8 @@ server <- function(input, output, session){
     req(input$park, input$station)
     
     wqp_data |> 
-      filter(Park %in% input$park,
-             MonitoringLocationName %in% input$station)
+      dplyr::filter(Park %in% input$park,
+                    MonitoringLocationName %in% input$station) 
   })
   
   # Map Reactive ----
@@ -42,20 +42,17 @@ server <- function(input, output, session){
     req(input$station)
     
     site <- wqp_data |>
-      filter(MonitoringLocationName %in% input$station)
+      dplyr::filter(MonitoringLocationName %in% input$station) |> 
+      dplyr::distinct()
     
     leafletProxy("map") |>
-      setView(
-        lng = site$lon[1],
-        lat = site$lat[1],
-        zoom = 12
-      ) |>
+      setView(lng = site$lon[1],
+              lat = site$lat[1],
+              zoom = 15) |>
       clearPopups() |>
-      addPopups(
-        lng = site$lon[1],
-        lat = site$lat[1],
-        popup = site$MonitoringLocationName[1]
-      )
+      addPopups(lng = site$lon[1],
+                lat = site$lat[1],
+                popup = site$MonitoringLocationName[1])
   })
   
   # Map ----

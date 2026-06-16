@@ -1,8 +1,8 @@
 # The User Interface for the GLKN Water Quality Visualizer 
 
 # Libraries ----
-library(shiny) # shiny app
-library(leaflet) # interactive maps 
+# library(shiny) # shiny app
+# library(leaflet) # interactive maps 
 
 
 # Main UI ----
@@ -10,6 +10,7 @@ library(leaflet) # interactive maps
 ui <- shinyUI(
   fluidPage(
     ## formatting ----
+    theme = "https://www.nps.gov/lib/bootstrap/3.3.2/css/nps-bootstrap.min.css",
     # tags$link(rel = "stylesheet",
     #           type = "text/css",
     #           href = "styles.css"),

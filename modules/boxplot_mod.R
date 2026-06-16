@@ -18,7 +18,7 @@ bp_ui <- function(id){
       inputId = ns("date_grouping"),
       label = "Compare By:",
       choices = list("Year" = "year",
-                     "Month" = "month",
+                     "Month" = "month_name",
                      "Site" = "MonitoringLocationName"),
       inline = TRUE
     ),
@@ -69,11 +69,20 @@ bp_server <- function(id, user_data){
       # continue if data exists
       boxplot_df <- boxplot_df1 |> 
         # filtering parameter
-        dplyr::filter(CharacteristicName %in% input$select_param)
+        dplyr::filter(PickListName %in% input$select_param)
     })
     
     ## Render Boxplot ----
     output$BoxPlot <- renderPlot({
+      
+      
+      # Correcting Label Names 
+      grouping_names <- c("Year" = "year",
+                          "Month" = "month_name",
+                          "Site" = "MonitoringLocationName")
+      # x-axis labels 
+      x_axis <- names(grouping_names)[
+        grouping_names == input$date_grouping]
       
       # plotting 
       ggplot(data = boxplot_data(),
@@ -81,6 +90,9 @@ bp_server <- function(id, user_data){
                  y = value,
                  fill = MonitoringLocationName)) + 
         geom_boxplot() + 
+        labs(x = x_axis,
+             y = unique(boxplot_data()$AxisName)) + 
+        scale_fill_natparks_d("Yellowstone") +
         theme_minimal()
     })
     

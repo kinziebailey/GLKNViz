@@ -161,6 +161,7 @@ cp_server <- function(id, user_data){
              y = y_axis) +
         regression_type() +
         regression_equation() +
+        scale_color_natparks_d("Yellowstone") +
         # geom_smooth(method = lm,
         # se = FALSE) +
         # stat_poly_eq(use_label(c("eq", "R2"))) +

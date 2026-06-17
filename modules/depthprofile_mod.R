@@ -31,7 +31,8 @@ dp_ui <- function(id){
       label = "About Depth Profiles",
       class = "btn btn-info"
     ),
-    plotlyOutput(ns("DepthProfilePlot"))
+    plotlyOutput(ns("DepthProfilePlot"),
+                 height = "auto")
   )
 }
 
@@ -52,6 +53,17 @@ dp_server <- function(id, user_data){
                                 style = "border:none;")
         )
       )
+    })
+    
+    ### Reactive Plot height ----
+    plotht <- reactiveVal(400)
+    
+    observe({
+      req(input$select_year)
+      
+      nvbox <- length(input$select_year)
+      
+      plotht(400 + (nvbox - 1) * 120)
     })
     
     ## Reactive for depth profiles ----
@@ -98,7 +110,8 @@ dp_server <- function(id, user_data){
         scale_color_natparks_d("Yellowstone") +
         theme_minimal()
       
-      ggplotly(ggdepthprofile) |> 
+      ggplotly(ggdepthprofile,
+               height = plotht()) |> 
         style(hovertemplate = paste0("<br>Site: ", profile_data()$MonitoringLocationName,
                                      "<br>Date: ", profile_data()$end_date,
                                      "<br>Value: ", profile_data()$value))

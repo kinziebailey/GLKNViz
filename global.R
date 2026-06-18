@@ -29,6 +29,17 @@ wqp_data <- wqp_data1 |>
   dplyr::select(-ActivityStartDate,
                 -ActivityEndDate)
 
+## Aquarius Data ----
+temp_array1 <- read.csv('data/temp_array_data.csv')
+
+### Data wrangling ----
+# Following code not working 
+# temp_array <- temp_data |> 
+#   dplyr::mutate(date_time = lubridate::ymd_hms(sub("Z$",
+#                                                    "",
+#                                                    date_time),
+#                                                tz = "America/Denver"))
+
 ## Map Data ----
 ESRIimagery <- "http://services.arcgisonline.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
 ESRItopo <- "http://services.arcgisonline.com/arcgis/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"

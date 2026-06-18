@@ -19,6 +19,13 @@ library(dataRetrieval) # download from WQP
 library(readr) # tidyverse data import
 library(dplyr) # data wrangling
 library(stringr) # data wrangling
+library(tidyr) # data wrangling 
+library(purrr) # map functions
+
+
+# For Aquarius Data 
+# remotes::install_github("nationalparkservice/imd-fetchaquarius")  # note repo name diff from package name
+# library(fetchaquarius)
 
 # Loading data ----
 # station data 
@@ -31,7 +38,7 @@ chr_lookup <- read_csv("./data/chr_lookup.csv")
 thresholds <- read_csv("./data/thresholds.csv")
 
 # Getting WQP Data ---- 
-# THIS IS EXTREMELY SLOW
+# THIS IS EXTREMELY SLOW ----
 # parks <- sort(unique(glkn_stations$Park))
 # 
 # WQPViews <- lapply(parks, function(park){
@@ -66,7 +73,7 @@ thresholds <- read_csv("./data/thresholds.csv")
 
 
 # Looping through parks to get WQP data. This will give you updated data for all
-# parks and sites listed in stations.csv. 
+# parks and sites listed in stations.csv. ----
 WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
   
   # Getting site ID for park
@@ -221,3 +228,96 @@ wqp_data <- wqp_data_thresh |>
 # Writing the new wqp_data ----
 write_csv(wqp_data,
           "./data/wqp_glkn.csv")
+
+
+# Getting Aquarius Data ----
+## Note: make sure you are connected to the VPN
+## This code takes a while to run and it is just because there is so much data.
+
+## Toolbox
+source("https://raw.githubusercontent.com/AndrewBirchHydro/albAquariusTools/main/Aquarius%20basics.R")
+timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
+publishapiurl='https://aquarius.nps.gov/aquarius/Publish/v2'
+
+# Sites 
+# Lake Richie == GLKN_ISRO_03
+# Grand Sable == PIRO_01
+# Beaver == PIRO_04
+# Manitou == SLBE_01
+# Bass (North) == SLBE_05
+# Shoepack == VOYA_05
+# Little Trout == VOYA_21
+# Mukooda == VOYA_22
+
+# Temp Arrays 
+# Starts with: Water Temp
+# Ends with: _array
+
+temp_sites <- c("GLKN_ISRO_03",
+                "GLKN_PIRO_01",
+                "GLKN_PIRO_04",
+                "GLKN_SLBE_01",
+                "GLKN_SLBE_05",
+                "GLKN_VOYA_05",
+                "GLKN_VOYA_21",
+                "GLKN_VOYA_22")
+
+# Getting list of water temp data at each site
+temp_data_all <- map_dfr(temp_sites, function(site){
+  
+  # Get dataset for site 
+  # data <- Print_datasets(site)
+  text <- capture.output(data <- Print_datasets(site))
+  
+  # Water Temp Datasets 
+  temp_data <- data$Identifier[grepl("Water Temp",
+                                     data$Identifier,
+                                     ignore.case = FALSE) & ! grepl("backup|borrowed|Historical|Inverse",
+                                                                    data$Identifier)]
+  
+  # get each dataset and "clean it up"
+  map_dfr(temp_data, function(depth){
+    
+    # message
+    message("Getting data for ", depth)
+    
+    # get raw data 
+    raw_timeseries <- Get_timeseries2(record = depth)
+    
+    # catching NULL for empty data
+    if(is.null(raw_timeseries) || length(raw_timeseries) == 0){
+      message("Skipping epty dataset: ", depth)
+      return(NULL)
+    }
+    
+    # cleaning up
+    temp_array <- try(TS_simplify(data = raw_timeseries), silent = TRUE)
+    
+    # catching errors and NULLs in TS_simplify
+    if(inherits(temp_array, "try-error") || is.null(temp_array)){
+      message("Could not 'clean up' dataset: ", depth)
+      return(NULL)
+    }
+    
+    # adding information
+    temp_array |> 
+      dplyr::mutate(#site = site,
+                    dataset = depth)
+  })
+})
+
+# Data Wrangling ----
+temp_data <- temp_data_all |> 
+  tidyr::separate_wider_regex(dataset,
+                              patterns = c("[^.]*\\.", # ignore everything up to the last period
+                                           dataset = "[^@]+", # everything before @
+                                           "@",
+                                           network = "[^_]+", # characters until _
+                                           "_",
+                                           site = ".*")) |>  # everything after _
+  dplyr::mutate(park = str_extract(site,
+                                   "[^_]+"))
+  
+# Writing to 'data' folder ----
+write_csv(temp_data,
+          "./data/temp_array_data.csv")

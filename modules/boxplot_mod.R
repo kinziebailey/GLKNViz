@@ -25,8 +25,7 @@ bp_ui <- function(id){
     # About Button
     actionButton(
       inputId = ns("about_bp"),
-      label = "About Boxplots",
-      class = "btn btn-info"
+      label = "About Boxplots"
     ),
     # Plot
     plotOutput(ns("BoxPlot"))
@@ -75,7 +74,6 @@ bp_server <- function(id, user_data){
     ## Render Boxplot ----
     output$BoxPlot <- renderPlot({
       
-      
       # Correcting Label Names 
       grouping_names <- c("Year" = "year",
                           "Month" = "month_name",
@@ -91,7 +89,8 @@ bp_server <- function(id, user_data){
                  fill = MonitoringLocationName)) + 
         geom_boxplot() + 
         labs(x = x_axis,
-             y = unique(boxplot_data()$AxisName)) + 
+             y = unique(boxplot_data()$AxisName),
+             fill = "Site") + 
         scale_fill_natparks_d("Yellowstone") +
         theme_minimal()
     })

@@ -23,11 +23,16 @@ ts_ui <- function(id){
       value = c(min(wqp_data$end_date, na.rm = TRUE),
                 max(wqp_data$end_date, na.rm = TRUE))
     ),
+    # Thresholds Button
+    checkboxInput(
+      inputId = ns("thresholds"),
+      label = "Thresholds",
+      value = FALSE
+    ),
     # About Button
     actionButton(
       inputId = ns("about_ts"),
-      label = "About Time Series",
-      class = "btn btn-info"
+      label = "About Time Series"
     ),
     # Plot 
     plotlyOutput(ns("TimeSeriesPlot"))
@@ -88,7 +93,9 @@ ts_server <- function(id, user_data){
                                  lon,
                                  value_unit,
                                  PickListName,
-                                 AxisName)) |>
+                                 AxisName,
+                                 LowerPoint,
+                                 UpperPoint)) |>
         dplyr::arrange(Park,
                        MonitoringLocationName,
                        end_date,
@@ -97,6 +104,18 @@ ts_server <- function(id, user_data){
     
     ### Render Time Series ----
     output$TimeSeriesPlot <- plotly::renderPlotly({
+      
+      # Data for Threshold lines
+      threshold_df <- timeseries_data() |>
+        dplyr::select(UpperPoint,
+                      LowerPoint) |> 
+        unique() |> 
+        tidyr::pivot_longer(cols = everything(),
+                            names_to = "Threshold",
+                            values_to = "thresh") |> 
+        dplyr::mutate(Threshold = recode(Threshold,
+                                         UpperPoint = "Upper Threshold",
+                                         LowerPoint = "Lower Threshold"))
       
       # plotting
       ggtimeseries <- ggplot(data = timeseries_data(),
@@ -107,9 +126,26 @@ ts_server <- function(id, user_data){
         geom_point() +
         geom_line() + 
         labs(x = "Date",
-             y = unique(timeseries_data()$AxisName)) +
+             y = unique(timeseries_data()$AxisName),
+             color = "Site",
+             shape = "Site") +
         scale_color_natparks_d("Yellowstone") +
         theme_minimal()
+      
+      ## Convertion to plotly is messing this up....maybe change to colors instead of linetype.
+      ## What does GLKN want to do? 
+      
+      # adding threshold lines 
+      if(input$thresholds){
+        ggtimeseries = ggtimeseries +
+          geom_hline(data = threshold_df,
+                     aes(yintercept = thresh,
+                         linetype = Threshold),
+                     color = "black", 
+                     inherit.aes = FALSE) +
+          scale_linetype_manual(values = c("Upper Threshold" = "dashed",
+                                           "Lower Threshold" = "dotted"))
+      }
       
       # converting to plotly
       ggplotly(ggtimeseries) |> 

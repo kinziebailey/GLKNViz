@@ -26,18 +26,18 @@ cp_ui <- function(id){
       inputId = ns("regression_selection"),
       label = "Regression Type:",
       choices = list(
+        "None" = "none",
         "Linear" = "linear",
         "LOESS" = "loess",
         "Polynomial (2nd degree)" = "poly2"
       ),
       inline = TRUE,
-      selected = character(0) 
+      selected = "none" 
     ),
     # About Button
     actionButton(
       inputId = ns("about_cp"),
-      label = "About Correlation Plot",
-      class = "btn btn-info"
+      label = "About Correlation Plot"
     ),
     plotlyOutput(ns("CorrelationPlot"))
   )
@@ -79,6 +79,22 @@ cp_server <- function(id, user_data){
       correlation_long <- correlation_long1 |> 
         dplyr::filter(PickListName %in% c(input$select_param1,
                                           input$select_param2)) |> 
+        # filtering depth for averaging
+        dplyr::filter(depth >= -2 | is.na(depth)) |>
+        # summarise data 
+        dplyr::summarise(value = case_when(n() == 1 ~ value[1],
+                                           n() == 2 ~ mean(value, na.rm = TRUE),
+                                           n() >= 3 ~ median(value, na.rm = TRUE)),
+                         .by = c(Park,
+                                 MonitoringLocationName,
+                                 CharacteristicName,
+                                 end_date,
+                                 AxisName,
+                                 lat,
+                                 lon,
+                                 value_unit,
+                                 PickListName,
+                                 AxisName)) |>
         # averaging if multiple values per sample period
         dplyr::summarise(value = mean(value, na.rm = TRUE),
                          .by = c(Park,
@@ -116,36 +132,44 @@ cp_server <- function(id, user_data){
     ### Reactive for Regressions ----
     regression_type <- reactive({
       
-      # regression equationa 
-      switch(input$regression_selection,
-             "linear" = geom_smooth(method = "lm",
-                                    se = FALSE),
-             "loess" = geom_smooth(method = "loess",
-                                   se = FALSE),
-             "poly2" = geom_smooth(method = "lm",
-                                   formula = y ~ poly(x, 2),
-                                   se = FALSE))
-    })
-    
-    ### Reactive for Equation Layer ----
-    regression_equation <- reactive({
+      df <- correlation_data()
       
-      if(input$regression_selection == "poly2"){
-        stat_poly_eq(formula = y ~ poly(x, 2),
-                     use_label(c("eq", "R2")))
-      } else{
-        stat_poly_eq(c("eq", "R2"))
-      }
+      x <- input$select_param1
+      y <- input$select_param2
+      
+      # building regressions
+      ## none
+      if(input$regression_selection == "none") return(NULL)
+      
+      # adding multiple site options 
+      df_reg <- df |> 
+        dplyr::group_by(MonitoringLocationName) |> 
+        dplyr::mutate(fit = {if(input$regression_selection == "linear"){
+          predict(lm(.data[[y]] ~ .data[[x]]))
+        } else if(input$regression_selection == "loess"){
+          predict(loess(.data[[y]] ~ .data[[x]]))
+        } else if(input$regression_selection == "poly2"){
+          predict(lm(.data[[y]] ~ poly(.data[[x]], 2)))
+        } else{NA_real_}
+    }) |> 
+        dplyr::ungroup()
+      
+      # add regression line 
+      geom_line(data = df_reg, 
+                aes(x = .data[[x]],
+                    y = fit,
+                    color = MonitoringLocationName),
+                inherit.aes = FALSE)
     })
     
     ## Render Correlation Plot ----
     
     output$CorrelationPlot <- plotly::renderPlotly({
-      
+
       # Calling datasets 
       correlation_longdf <- correlation_long()
       correlation_df <- correlation_data()
-      
+
       # Axis Labels
       x_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param1])
       y_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param2])
@@ -158,9 +182,10 @@ cp_server <- function(id, user_data){
                                   text = hover)) +
         geom_point() + 
         labs(x = x_axis,
-             y = y_axis) +
+             y = y_axis,
+             color = "Site") +
         regression_type() +
-        regression_equation() +
+        # regression_equation() +
         scale_color_natparks_d("Yellowstone") +
         # geom_smooth(method = lm,
         # se = FALSE) +

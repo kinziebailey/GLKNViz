@@ -64,16 +64,16 @@ details_server <- function(id, data_from){
       
       # table  
       DT::datatable(data_values,
+                    extension = c("Buttons",
+                                  "KeyTable"),
                     options = list(autoWidth = F,
-                                   buttons = c("Copy",
-                                               "CSV",
-                                               "Excel"),
+                                   buttons = c("copy",
+                                               "csv",
+                                               "excel"),
                                    keys = TRUE),
                     class = "stripe hover order-column cell-border compact",
                     rownames = FALSE,
-                    filter = "top",
-                    extension = c("Buttons",
-                                  "KeyTable"))
+                    filter = "top")
       
     })
     

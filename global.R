@@ -30,7 +30,7 @@ wqp_data <- wqp_data1 |>
                 -ActivityEndDate)
 
 ## Aquarius Data ----
-temp_array1 <- read.csv('data/temp_array_data.csv')
+# temp_array1 <- read.csv('data/temp_array_data.csv')
 
 ### Data wrangling ----
 # Following code not working 

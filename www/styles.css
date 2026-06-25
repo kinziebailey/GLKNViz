@@ -9,19 +9,28 @@ h1, h2, h3, h4 {
   font-weight: 400; 
 } 
 
-/* Fixing dropdowns over map*/
+/* Main header styling */
+#main-header {
+  background-color: #000;
+  color: white;
+  padding: 15px;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
 
-/* first drop down*/
-.selectize-control {
+/* Fixing dropdowns over map */
+
+/* drop downs */
+#park-select .selectize-control {
   z-index: 9999;
 }
 
-/* second drop down*/
-.selectize-control {
-  z-index: 999;
+#site-select .selectize-control {
+  z-index: 9998;
 }
 
-/* third drop down*/
-.selectize-control {
-  z-index: 999;
+/* leaflet map */ 
+.leaflet-control-zoom{
+  z-index: 1000;
 }

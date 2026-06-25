@@ -4,20 +4,21 @@
 </head>
 <body>
 
-<p>The "Time Series" graph plots one parameter against time. Each point on the "Time Series" graph is one measurement, regardless of how many measurements were collected during a site visit. The "Data" table shows a screen-reader-friendly version of the same information shown in the "Time Series" graph.</p> 
+<p>The "Time Series" graph plots one parameter against time for each site selected. For the parameters that have depth profiles (e.g. water temperature, pH, speific conductivity, DO (mg/L), DO (%)), only data in the upper 2 meters of the water column are shown. If there is more than one value, the following rules are applied. </p>
+<ol style="margin: 10px 40px;">
+        <li>The mean is calculated for two values</li>
+        <li>The median is calculated for three or more values</li>
+      </ol>
+
+<p>The "Table" tab shows a screen-reader-friendly version of the data used to create the "Time Series" graph. The "Exceedances" tab shows the data associated with any values that exceed the threshold values for the parameter of interest. </p> 
   
 <h4>Water Quality Thresholds</h4>
 
-<p>Some water quality parameters have thresholds that indicate "good" water quality. Checking the "Show Water Quality Threshold Line" box will display this threshold as a line on the graph.</p>
+<p>Some water quality parameters have thresholds that indicate "good" water quality. Checking the "Threshold" box will display this threshold as a line on the graph.</p>
     
 <h4>Downloads</h4>
 
-<p>You can download the graph in .png format by mousing over the graph and then clicking the camera icon.</p>
+<p>You can download the graph in .png format by mousing over the graph and then clicking the camera icon. For each table, you can download a .csv or .xlsx version of the data.</p>
 
-<h4>Graphics Options</h4>
-
-<p>Clicking the Graphics Options button will allow you to adjust the graph height and width, the point and line color and size, and the font size.</p>
-
-  
 </body>
 </html>

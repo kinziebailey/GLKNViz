@@ -95,7 +95,8 @@ details_server <- function(id, data_from){
         dplyr::semi_join(exeedance_values1,
                          by = c("Park", 
                                 "MonitoringLocationName", 
-                                "end_date")) |> 
+                                "end_date",
+                                "AxisName")) |> 
         dplyr::filter(value > UpperPoint | value < LowerPoint) |> 
         dplyr::select(Park,
                       MonitoringLocationName,

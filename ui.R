@@ -41,7 +41,7 @@ ui <- shinyUI(
       column(
         width = 3, # 3/12 of the page
         ### Park ----
-        div(id = "park-select", # fixing dropdown menue
+        div(id = "park-select",
             selectInput(
               "park",
               "Park",
@@ -52,13 +52,13 @@ ui <- shinyUI(
         ),
         ### Site ---
         div(id = "site-select",
-            selectInput(
+            selectizeInput( # needed for deselect x on site
               "station",
               "Site",
-              choices = c("Choose Site" = "",
-                          sort(unique(wqp_data$MonitoringLocationName))),
-              selected = "",
-              multiple = TRUE
+              choices = sort(unique(wqp_data$MonitoringLocationName)),
+              multiple = TRUE, # allows for multiple selections
+              options = list(placeholder = "Choose Site", # options for selectize
+                             plugins = list("remove_button"))
             )
         ),
         ### Map ----
@@ -73,7 +73,7 @@ ui <- shinyUI(
                tabPanel(
                  # Tab Name
                  h4("Instructions"),
-                 # Instruction HTML
+                 # Instruction.html
                  includeHTML("www/Instruction.html")
                ),
                tabPanel(
@@ -103,7 +103,13 @@ ui <- shinyUI(
                  # correlation_mod.R
                  cp_ui("cp"),
                  details_ui("details_cp")
-               )
+               ),
+               tabPanel(
+                 # Tab Name
+                 h4("About"),
+                 # Instruction.html
+                 includeHTML("www/AboutVisualizer.html")
+               ),
              )
              
       )

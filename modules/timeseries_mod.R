@@ -23,6 +23,19 @@ ts_ui <- function(id){
       value = c(min(wqp_data$end_date, na.rm = TRUE),
                 max(wqp_data$end_date, na.rm = TRUE))
     ),
+    # Add Regression
+    radioButtons(
+      inputId = ns("regression_selection"),
+      label = "Regression Type:",
+      choices = list(
+        "None" = "none",
+        "Linear" = "linear",
+        "LOESS" = "loess",
+        "Polynomial (2nd degree)" = "poly2"
+      ),
+      inline = TRUE,
+      selected = "none" 
+    ),
     # Thresholds Button
     checkboxInput(
       inputId = ns("thresholds"),
@@ -101,6 +114,41 @@ ts_server <- function(id, user_data){
                        end_date,
                        CharacteristicName)
     }) 
+    
+    ### Reactive for Regressions ----
+    # regression_type <- reactive({
+    #   
+    #   df <- timeseries_data()
+    #   
+    #   x <- input$select_param
+    #   y <- timeseries_data()$end_date
+    #   
+    #   # building regressions: WORKING HERE ----------------------------------
+    #   ## none
+    #   if(input$regression_selection == "none") return(NULL)
+    #   
+    #   # adding multiple site options 
+    #   df_reg <- df |> 
+    #     dplyr::group_by(MonitoringLocationName) |> 
+    #     # dplyr::filter(!is.na(.data[[x]]),
+    #     #               !is.na(.data[[x]])) |> 
+    #     dplyr::mutate(fit = {if(input$regression_selection == "linear"){
+    #       predict(lm(.data[[y]] ~ .data[[x]]))
+    #     } else if(input$regression_selection == "loess"){
+    #       predict(loess(.data[[y]] ~ .data[[x]]))
+    #     } else if(input$regression_selection == "poly2"){
+    #       predict(lm(.data[[y]] ~ poly(.data[[x]], 2)))
+    #     } else{NA_real_}
+    #     }) |> 
+    #     dplyr::ungroup()
+    #   
+    #   # add regression line 
+    #   geom_line(data = df_reg, 
+    #             aes(x = .data[[x]],
+    #                 y = fit,
+    #                 color = MonitoringLocationName),
+    #             inherit.aes = FALSE)
+    # })
     
     ### Render Time Series ----
     output$TimeSeriesPlot <- plotly::renderPlotly({

@@ -117,8 +117,8 @@ details_server <- function(id, data_from){
                       Parameter = AxisName,
                       Value = value,
                       Units = value_unit,
-                      LowerThershold = LowerPoint,
-                      UpperThreshold = UpperPoint)|>
+                      `Lower Threshold` = LowerPoint,
+                      `Upper Threshold` = UpperPoint)|>
         dplyr::arrange(Park,
                        Site,
                        Date,

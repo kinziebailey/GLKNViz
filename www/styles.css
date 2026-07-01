@@ -34,3 +34,11 @@ h1, h2, h3, h4 {
 .leaflet-control-zoom{
   z-index: 1000;
 }
+
+/* changing selectize font for site */
+.selectize-control .selectize-input,
+.selectize-control .selectize-dropdown {
+  font-family: 'Helvetica Neue', Helvetica;
+  font-weight: 200;
+  font-size: 12px;
+}

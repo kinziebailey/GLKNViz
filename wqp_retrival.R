@@ -95,7 +95,7 @@ WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
     },
     # error, return null for park
     error = function(err){
-      warning("ERROR: ", conitionMessage(err), " while pulling for ", park)
+      warning("ERROR: ", conditionMessage(err), " while pulling for ", park)
       return(NULL)
     }
     )
@@ -181,8 +181,16 @@ wqp_data_thresh <- wqp_data_ml |>
   select(-ends_with(".x"),
          -ends_with(".y"))
 
+## Removing VOYA Sites (Agnes, Jorgans, Oleary, Quarterline, and War Club) ----
+wqp_data_new <- wqp_data_thresh |> 
+  filter(!(MonitoringLocationName %in% c("Agnes Lake",
+                                         "Jorgens Lake",
+                                         "O'Leary Lake",
+                                         "Quarter Line Lake",
+                                         "War Club Lake")))
+
 ## Adding characteristicNames and cleaning up columns ----
-wqp_data <- wqp_data_thresh |> 
+wqp_data <- wqp_data_new |> 
   # adding char names
   left_join(chr_lookup,
             by = "CharacteristicName") |> 

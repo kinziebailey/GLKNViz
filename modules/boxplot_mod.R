@@ -22,6 +22,12 @@ bp_ui <- function(id){
                      "Site" = "MonitoringLocationName"),
       inline = TRUE
     ),
+    # Thresholds Button
+    checkboxInput(
+      inputId = ns("thresholds"),
+      label = "Thresholds",
+      value = FALSE
+    ),
     # About Button
     actionButton(
       inputId = ns("about_bp"),
@@ -74,6 +80,34 @@ bp_server <- function(id, user_data){
     ## Render Boxplot ----
     output$BoxPlot <- renderPlot({
       
+      # Data for Threshold lines 
+      threshold_df <- boxplot_data() |>
+        dplyr::select(UpperPoint,
+                      LowerPoint) |> 
+        dplyr::distinct() |> 
+        tidyr::pivot_longer(cols = everything(),
+                            names_to = "Threshold",
+                            values_to = "thresh") |> 
+        dplyr::mutate(Threshold = recode(Threshold,
+                                         UpperPoint = "Upper Threshold",
+                                         LowerPoint = "Lower Threshold"))
+      
+      # Reporting Limits
+      ## number of values plotted
+      n_data <- boxplot_data() |> 
+        dplyr::filter(!is.na(value)) |> 
+        dplyr::tally()
+      
+      ## below quantification limit
+      n_reporting_limit <- boxplot_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "Present Below Quantification Limit") |> 
+        dplyr::tally()
+      
+      ## below detection limit
+      n_detection_limit <- boxplot_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
+        dplyr::tally()
+      
       # Correcting Label Names 
       grouping_names <- c("Year" = "year",
                           "Month" = "month_name",
@@ -82,8 +116,11 @@ bp_server <- function(id, user_data){
       x_axis <- names(grouping_names)[
         grouping_names == input$date_grouping]
       
+      
+      ### GGBOXPLOT NOT FOUND.....What is causing this error....
+      
       # plotting 
-      ggplot(data = boxplot_data(),
+      ggboxplot <- ggplot(data = boxplot_data(),
              aes(x = factor(.data[[input$date_grouping]]), # from radiobutton
                  y = value,
                  fill = MonitoringLocationName)) + 
@@ -92,10 +129,36 @@ bp_server <- function(id, user_data){
              y = unique(boxplot_data()$AxisName),
              fill = "Site") + 
         scale_fill_natparks_d("Yellowstone") +
-        theme_minimal()
+        ggtitle(paste0("Total Measurements: ",
+                       n_data,
+                       "\nValues < Quantificantion Limit: ",
+                       n_reporting_limit,
+                       "\nValues < Detection Limit: ",
+                       n_detection_limit)) +
+        theme_minimal() +
+        theme(plot.title = element_text(size = 12))
+      
+      # adding threshold lines 
+      if(input$thresholds){
+        ggboxplot = ggboxplot +
+          geom_hline(data = threshold_df,
+                     aes(yintercept = thresh,
+                         linetype = Threshold),
+                     color = "black") +
+          scale_linetype_manual(values = c("Upper Threshold" = "dashed",
+                                           "Lower Threshold" = "dotted"))
+      }
+      
+      ggboxplot
+      
     })
     
-    # returing data details
+    # converting to plotly
+    # ggplotly(ggboxplot) |> 
+    #   style(hovertemplate = paste0("<br>Site: ", boxplot_data()$MonitoringLocationName,
+    #                                "<br>Date: ", boxplot_data()$end_date))
+    
+    # returning data details
     return(list(boxplot_data = boxplot_data))
   })
 }

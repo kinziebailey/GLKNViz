@@ -72,6 +72,16 @@ thresholds <- read_csv("./data/thresholds.csv")
 # wqp_data_all <- dplyr::bind_rows(WQPViews)
 
 
+
+# ==========================================================================================================
+
+# data_full <- readWQPdata(siteid = "11NPSWRD_WQX-VOYA_01",
+#                          # characteristicName = "pH",
+#                          # dataProfile = "fullPhysChem",
+#                          service = "ResultWQX3")
+
+# ==========================================================================================================
+
 # Looping through parks to get WQP data. This will give you updated data for all
 # parks and sites listed in stations.csv. ----
 WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
@@ -127,14 +137,25 @@ wqp_data1 <- wqp_data_all |>
   filter(!grepl("Air|Other",
                 ActivityMediaName)) |> 
   filter(!grepl("/", 
-                ActivityIdentifier)) |> 
+                ActivityIdentifier)) |>
+  # removing additional bottom samples for thermally stratified sites
+  filter(!(CharacteristicName %in% c("Ammonium",
+                                     "Nitrate + Nitrite",
+                                     "Nitrogen",
+                                     "Phosphorus") & 
+             ActivityTopDepthHeightMeasure.MeasureValue > 2)) |> 
+  filter(!(CharacteristicName %in% c("Ammonium",
+                                     "Nitrate + Nitrite",
+                                     "Nitrogen",
+                                     "Phosphorus") & 
+             SampleCollectionEquipmentName == "Van Dorn Bottle")) |> 
+  filter(!LaboratoryName == "White Water Associates") |> 
+  # removing non-detected data
+  filter(!ResultDetectionConditionText == "Not Detected") |> 
   # adding censored data conditions
   mutate(ResultMeasureValue = case_when(ResultDetectionConditionText == "Present Below Quantification Limit" ~ 
                                           str_extract(ResultCommentText, "\\d*\\.?\\d+"),
                                         TRUE ~ ResultMeasureValue)) |> 
-  # removing no detection/not reported
-  # filter(!grepl("Not Detected|Not Reported",
-  #               ResultDetectionConditionText)) |> # leaving these in for now so we can try to report how many values are there. 
   # correcting depth measurements
   mutate(ActivityDepthHeightMeasure.MeasureValue = if_else(ActivityDepthHeightMeasure.MeasureValue < 0, 0,
                                                            ActivityDepthHeightMeasure.MeasureValue),

@@ -41,8 +41,11 @@ server <- function(input, output, session){
   observeEvent(input$station, {
     req(input$station)
     
+    # selecting last station to zoom to
+    last_station <- tail(input$station, 1)
+    
     site <- wqp_data |>
-      dplyr::filter(MonitoringLocationName %in% input$station) |> 
+      dplyr::filter(MonitoringLocationName == last_station) |> 
       dplyr::distinct()
     
     leafletProxy("map") |>

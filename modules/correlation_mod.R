@@ -65,6 +65,7 @@ cp_server <- function(id, user_data){
     # data table df
     correlation_long <- reactive({
       
+      # required data
       req(input$select_param1, input$select_param2)
       
       # data wrangling 
@@ -82,7 +83,7 @@ cp_server <- function(id, user_data){
         # filtering depth for averaging
         dplyr::filter(depth >= -2 | is.na(depth)) |>
         # summarise data 
-        dplyr::summarise(value = case_when(n() == 1 ~ value[1],
+        dplyr::summarise(value = case_when(n() == 1 ~ value[1], # needed with duplicate values
                                            n() == 2 ~ mean(value, na.rm = TRUE),
                                            n() >= 3 ~ median(value, na.rm = TRUE)),
                          .by = c(Park,
@@ -94,18 +95,8 @@ cp_server <- function(id, user_data){
                                  lon,
                                  value_unit,
                                  PickListName,
-                                 AxisName)) |>
-        # averaging if multiple values per sample period
-        dplyr::summarise(value = mean(value, na.rm = TRUE),
-                         .by = c(Park,
-                                 end_date,
-                                 MonitoringLocationName, 
-                                 CharacteristicName,
                                  AxisName,
-                                 PickListName,
-                                 lat,
-                                 lon,
-                                 value_unit))
+                                 ResultDetectionConditionText))
     })
     
     # plot df
@@ -134,16 +125,22 @@ cp_server <- function(id, user_data){
       
       df <- correlation_data()
       
+      # to be able to select parameters in data
       x <- input$select_param1
       y <- input$select_param2
       
       # building regressions
-      ## none
+      ## no regression, start here
       if(input$regression_selection == "none") return(NULL)
       
-      # adding multiple site options 
+      # creating regressions for each option
       df_reg <- df |> 
+        # for multiple sites
         dplyr::group_by(MonitoringLocationName) |> 
+        # removing NA
+        dplyr::filter(!is.na(.data[[x]]),
+                      !is.na(.data[[y]])) |> 
+        # if regression selection, predict regression output
         dplyr::mutate(fit = {if(input$regression_selection == "linear"){
           predict(lm(.data[[y]] ~ .data[[x]]))
         } else if(input$regression_selection == "loess"){
@@ -159,16 +156,31 @@ cp_server <- function(id, user_data){
                 aes(x = .data[[x]],
                     y = fit,
                     color = MonitoringLocationName),
-                inherit.aes = FALSE)
+                inherit.aes = FALSE) #  dont use "global" aes
     })
     
     ## Render Correlation Plot ----
-    
     output$CorrelationPlot <- plotly::renderPlotly({
 
       # Calling datasets 
       correlation_longdf <- correlation_long()
       correlation_df <- correlation_data()
+      
+      # Reporting Limits
+      ## number of values plotted
+      n_data <- correlation_long() |> 
+        dplyr::filter(!is.na(value)) |> 
+        dplyr::tally()
+      
+      ## below quantification limit
+      n_reporting_limit <- correlation_long() |> 
+        dplyr::filter(ResultDetectionConditionText == "Present Below Quantification Limit") |> 
+        dplyr::tally()
+      
+      ## below detection limit
+      n_detection_limit <- correlation_long() |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
+        dplyr::tally()
 
       # Axis Labels
       x_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param1])
@@ -185,19 +197,20 @@ cp_server <- function(id, user_data){
              y = y_axis,
              color = "Site") +
         regression_type() +
-        # regression_equation() +
         scale_color_natparks_d("Yellowstone") +
-        # geom_smooth(method = lm,
-        # se = FALSE) +
-        # stat_poly_eq(use_label(c("eq", "R2"))) +
         theme_minimal()
       
       ggplotly(ggcorrelation,
-               tooltip = "text") #|> 
-      # style(hovertemplate = paste0("<br>Site: ", correlation_data()$MonitoringLocationName,
-      #                              "<br>Date: ", correlation_data()$end_date,
-      #                              "<br>X-axis Value: ", .data[[input$select_param1]],
-      #                              "<br>Y-axis Value: ", .data[[input$select_param2]]))
+               tooltip = "text") |> 
+        layout(title = list(text = paste0("Total Measurements: ",
+                                          n_data,
+                                          "\nValues < Quantificantion Limit: ",
+                                          n_reporting_limit,
+                                          "\nValues < Detection Limit: ",
+                                          n_detection_limit),
+                            font = list(size = 12),
+                            x = 0.05),
+               margin = list(t = 65))
     })
     
     # returning data details 

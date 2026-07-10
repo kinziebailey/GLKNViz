@@ -73,7 +73,7 @@ ts_server <- function(id, user_data){
     ### Reactive for time series ----
     timeseries_data <- reactive({
       
-      # required date
+      # required data
       req(input$select_param, input$date_range)
       
       # data wrangling
@@ -94,7 +94,7 @@ ts_server <- function(id, user_data){
         # filtering depth for averaging
         dplyr::filter(depth >= -2 | is.na(depth)) |>
         # summarise data 
-        dplyr::summarise(value = case_when(n() == 1 ~ value[1],
+        dplyr::summarise(value = case_when(n() == 1 ~ value[1], # needed with duplicate values 
                                            n() == 2 ~ mean(value, na.rm = TRUE),
                                            n() >= 3 ~ median(value, na.rm = TRUE)),
                          .by = c(Park,
@@ -108,7 +108,8 @@ ts_server <- function(id, user_data){
                                  PickListName,
                                  AxisName,
                                  LowerPoint,
-                                 UpperPoint)) |>
+                                 UpperPoint,
+                                 ResultDetectionConditionText)) |>
         dplyr::arrange(Park,
                        MonitoringLocationName,
                        end_date,
@@ -116,48 +117,52 @@ ts_server <- function(id, user_data){
     }) 
     
     ### Reactive for Regressions ----
-    # regression_type <- reactive({
-    #   
-    #   df <- timeseries_data()
-    #   
-    #   x <- input$select_param
-    #   y <- timeseries_data()$end_date
-    #   
-    #   # building regressions: WORKING HERE ----------------------------------
-    #   ## none
-    #   if(input$regression_selection == "none") return(NULL)
-    #   
-    #   # adding multiple site options 
-    #   df_reg <- df |> 
-    #     dplyr::group_by(MonitoringLocationName) |> 
-    #     # dplyr::filter(!is.na(.data[[x]]),
-    #     #               !is.na(.data[[x]])) |> 
-    #     dplyr::mutate(fit = {if(input$regression_selection == "linear"){
-    #       predict(lm(.data[[y]] ~ .data[[x]]))
-    #     } else if(input$regression_selection == "loess"){
-    #       predict(loess(.data[[y]] ~ .data[[x]]))
-    #     } else if(input$regression_selection == "poly2"){
-    #       predict(lm(.data[[y]] ~ poly(.data[[x]], 2)))
-    #     } else{NA_real_}
-    #     }) |> 
-    #     dplyr::ungroup()
-    #   
-    #   # add regression line 
-    #   geom_line(data = df_reg, 
-    #             aes(x = .data[[x]],
-    #                 y = fit,
-    #                 color = MonitoringLocationName),
-    #             inherit.aes = FALSE)
-    # })
+    regression_type <- reactive({
+
+      df <- timeseries_data()
+
+      # building regressions:
+      ## no regression, start here 
+      if(input$regression_selection == "none") return(NULL)
+
+      # creating regressions for each option
+      df_reg <- df |>
+        # converting date to numeric for loess
+        dplyr::mutate(end_date_num = as.numeric(end_date)) |> 
+        # for multiple sites
+        dplyr::group_by(MonitoringLocationName) |>
+        # removing NA
+        dplyr::filter(!is.na(value),
+                      !is.na(end_date_num)) |>
+        # ordering data 
+        dplyr::arrange(end_date_num,
+                       .by_group = TRUE) |> 
+        # if regression selection, predict regression output
+        dplyr::mutate(fit = {if(input$regression_selection == "linear"){
+          predict(lm(value ~ end_date_num))
+        } else if(input$regression_selection == "loess"){
+          predict(loess(value ~ end_date_num))
+        } else if(input$regression_selection == "poly2"){
+          predict(lm(value ~ poly(end_date_num, 2)))
+        } else{NA_real_}
+        }) |>
+        dplyr::ungroup()
+
+      # add regression line
+      geom_line(data = df_reg,
+                aes(x = end_date,
+                    y = fit,
+                    color = MonitoringLocationName))
+    })
     
-    ### Render Time Series ----
+    ### Render Time Series Plot ----
     output$TimeSeriesPlot <- plotly::renderPlotly({
       
       # Data for Threshold lines
       threshold_df <- timeseries_data() |>
         dplyr::select(UpperPoint,
                       LowerPoint) |> 
-        unique() |> 
+        dplyr::distinct() |> 
         tidyr::pivot_longer(cols = everything(),
                             names_to = "Threshold",
                             values_to = "thresh") |> 
@@ -165,23 +170,35 @@ ts_server <- function(id, user_data){
                                          UpperPoint = "Upper Threshold",
                                          LowerPoint = "Lower Threshold"))
       
+      # Reporting Limits 
+      ## number of values plotted
+      n_data <- timeseries_data() |> 
+        dplyr::filter(!is.na(value)) |> 
+        dplyr::tally()
+      
+      ## below quantification limit
+      n_reporting_limit <- timeseries_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "Present Below Quantification Limit") |> 
+        dplyr::tally()
+      
+      ## below detection limit
+      n_detection_limit <- timeseries_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
+        dplyr::tally()
+      
       # plotting
       ggtimeseries <- ggplot(data = timeseries_data(),
                              aes(end_date,
                                  value,
-                                 color = MonitoringLocationName,
-                                 shape = MonitoringLocationName)) +
+                                 color = MonitoringLocationName)) +
         geom_point() +
         geom_line() + 
         labs(x = "Date",
              y = unique(timeseries_data()$AxisName),
-             color = "Site",
-             shape = "Site") +
+             color = "Site") +
+        regression_type() +
         scale_color_natparks_d("Yellowstone") +
         theme_minimal()
-      
-      ## Convertion to plotly is messing this up....maybe change to colors instead of linetype.
-      ## What does GLKN want to do? 
       
       # adding threshold lines 
       if(input$thresholds){
@@ -189,14 +206,22 @@ ts_server <- function(id, user_data){
           geom_hline(data = threshold_df,
                      aes(yintercept = thresh,
                          linetype = Threshold),
-                     color = "black", 
-                     inherit.aes = FALSE) +
+                     color = "black") +
           scale_linetype_manual(values = c("Upper Threshold" = "dashed",
                                            "Lower Threshold" = "dotted"))
       }
       
       # converting to plotly
       ggplotly(ggtimeseries) |> 
+        layout(title = list(text = paste0("Total Measurements: ",
+                                          n_data,
+                                          "\nValues < Quantificantion Limit: ",
+                                          n_reporting_limit,
+                                          "\nValues < Detection Limit: ",
+                                          n_detection_limit),
+                            font = list(size = 12),
+                            x = 0.05),
+               margin = list(t = 65)) |> 
         style(hovertemplate = paste0("<br>Site: ", timeseries_data()$MonitoringLocationName,
                                      "<br>Date: ", timeseries_data()$end_date,
                                      "<br>Value: ", timeseries_data()$value))

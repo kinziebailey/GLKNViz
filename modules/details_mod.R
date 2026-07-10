@@ -66,7 +66,8 @@ details_server <- function(id, data_from){
       DT::datatable(data_values,
                     extension = c("Buttons",
                                   "KeyTable"),
-                    options = list(autoWidth = F,
+                    options = list(dom = "Bfrtip",
+                                   autoWidth = F,
                                    buttons = c("copy",
                                                "csv",
                                                "excel"),
@@ -126,7 +127,8 @@ details_server <- function(id, data_from){
       
       # table  
       DT::datatable(exceedance_values,
-                    options = list(autoWidth = F,
+                    options = list(dom = "Bfrtip",
+                                   autoWidth = F,
                                    buttons = c("Copy",
                                                "CSV",
                                                "Excel"),

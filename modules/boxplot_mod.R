@@ -34,7 +34,7 @@ bp_ui <- function(id){
       label = "About Boxplots"
     ),
     # Plot
-    plotOutput(ns("BoxPlot"))
+    girafeOutput(ns("BoxPlot"))
   )
 }
 
@@ -78,7 +78,7 @@ bp_server <- function(id, user_data){
     })
     
     ## Render Boxplot ----
-    output$BoxPlot <- renderPlot({
+    output$BoxPlot <- ggiraph::renderGirafe({
       
       # Data for Threshold lines 
       threshold_df <- boxplot_data() |>
@@ -116,15 +116,16 @@ bp_server <- function(id, user_data){
       x_axis <- names(grouping_names)[
         grouping_names == input$date_grouping]
       
-      
-      ### GGBOXPLOT NOT FOUND.....What is causing this error....
-      
       # plotting 
       ggboxplot <- ggplot(data = boxplot_data(),
              aes(x = factor(.data[[input$date_grouping]]), # from radiobutton
                  y = value,
                  fill = MonitoringLocationName)) + 
-        geom_boxplot() + 
+        geom_boxplot_interactive(aes(tooltip = after_stat({paste0("Site: ", .data$fill,
+                                                                  "\nQ1: ", prettyNum(.data$lower),
+                                                                  "\nMedian: ", prettyNum(.data$middle),
+                                                                  "\nQ3: ", prettyNum(.data$upper))
+                                                            }))) + 
         labs(x = x_axis,
              y = unique(boxplot_data()$AxisName),
              fill = "Site") + 
@@ -149,14 +150,9 @@ bp_server <- function(id, user_data){
                                            "Lower Threshold" = "dotted"))
       }
       
-      ggboxplot
+    girafe(ggobj = ggboxplot)
       
     })
-    
-    # converting to plotly
-    # ggplotly(ggboxplot) |> 
-    #   style(hovertemplate = paste0("<br>Site: ", boxplot_data()$MonitoringLocationName,
-    #                                "<br>Date: ", boxplot_data()$end_date))
     
     # returning data details
     return(list(boxplot_data = boxplot_data))

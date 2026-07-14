@@ -48,7 +48,7 @@ ts_ui <- function(id){
       label = "About Time Series"
     ),
     # Plot 
-    plotlyOutput(ns("TimeSeriesPlot"))
+    girafeOutput(ns("TimeSeriesPlot"))
   )
 }
 
@@ -156,7 +156,7 @@ ts_server <- function(id, user_data){
     })
     
     ### Render Time Series Plot ----
-    output$TimeSeriesPlot <- plotly::renderPlotly({
+    output$TimeSeriesPlot <- ggiraph::renderGirafe({
       
       # Data for Threshold lines
       threshold_df <- timeseries_data() |>
@@ -191,12 +191,20 @@ ts_server <- function(id, user_data){
                              aes(end_date,
                                  value,
                                  color = MonitoringLocationName)) +
-        geom_point() +
+        geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
+                                                    "\nDate: ", end_date,
+                                                    "\nValue: ", value))) +
         geom_line() + 
         labs(x = "Date",
              y = unique(timeseries_data()$AxisName),
              color = "Site") +
         regression_type() +
+        ggtitle(paste0("Total Measurements: ",
+                       n_data,
+                       "\nValues < Quantificantion Limit: ",
+                       n_reporting_limit,
+                       "\nValues < Detection Limit: ",
+                       n_detection_limit)) +
         scale_color_natparks_d("Yellowstone") +
         theme_minimal()
       
@@ -211,20 +219,8 @@ ts_server <- function(id, user_data){
                                            "Lower Threshold" = "dotted"))
       }
       
-      # converting to plotly
-      ggplotly(ggtimeseries) |> 
-        layout(title = list(text = paste0("Total Measurements: ",
-                                          n_data,
-                                          "\nValues < Quantificantion Limit: ",
-                                          n_reporting_limit,
-                                          "\nValues < Detection Limit: ",
-                                          n_detection_limit),
-                            font = list(size = 12),
-                            x = 0.05),
-               margin = list(t = 65)) |> 
-        style(hovertemplate = paste0("<br>Site: ", timeseries_data()$MonitoringLocationName,
-                                     "<br>Date: ", timeseries_data()$end_date,
-                                     "<br>Value: ", timeseries_data()$value))
+      girafe(ggobj = ggtimeseries)
+
     })
     
     # returning data details 

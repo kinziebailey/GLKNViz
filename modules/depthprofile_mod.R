@@ -36,8 +36,8 @@ dp_ui <- function(id){
       inputId = ns("about_dp"),
       label = "About Depth Profiles"
     ),
-    plotlyOutput(ns("DepthProfilePlot"),
-                 height = "auto")
+    girafeOutput(ns("DepthProfilePlot"),
+                    height = "auto")
   )
 }
 
@@ -98,7 +98,7 @@ dp_server <- function(id, user_data){
     })
     
     ## Render Depth Profile Plot ----
-    output$DepthProfilePlot <- plotly::renderPlotly({
+    output$DepthProfilePlot <- ggiraph::renderGirafe({
       
       # Data for Threshold lines
       threshold_df <- profile_data() |>
@@ -134,13 +134,21 @@ dp_server <- function(id, user_data){
                                    y = depth,
                                    color = MonitoringLocationName)) +
         geom_path() + 
-        geom_point() +
+        geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
+                                                    "\nDepth: ", depth,
+                                                    "\nValue: ", value))) +
         labs(x = unique(profile_data()$AxisName),
              y = "Depth (m)",
              color = "Site") +
         facet_grid(row = vars(year),
                    cols = vars(month_name)) +
         scale_color_natparks_d("Yellowstone") +
+        ggtitle(paste0("Total Measurements: ",
+                       n_data,
+                       "\nValues < Quantificantion Limit: ",
+                       n_reporting_limit,
+                       "\nValues < Detection Limit: ",
+                       n_detection_limit))  +
         theme_minimal()
       
       # adding threshold lines 
@@ -154,21 +162,8 @@ dp_server <- function(id, user_data){
                                            "Lower Threshold" = "dotted"))
       }
 
-      # converting to plotly 
-      ggplotly(ggdepthprofile,
-               height = plotht()) |> 
-        layout(title = list(text = paste0("Total Measurements: ",
-                                          n_data,
-                                          "\nValues < Quantificantion Limit: ",
-                                          n_reporting_limit,
-                                          "\nValues < Detection Limit: ",
-                                          n_detection_limit),
-                            font = list(size = 12),
-                            x = 0.05),
-               margin = list(t = 65)) |> 
-        style(hovertemplate = paste0("<br>Site: ", profile_data()$MonitoringLocationName,
-                                     "<br>Date: ", profile_data()$end_date,
-                                     "<br>Value: ", profile_data()$value))
+      girafe(ggobj = ggdepthprofile)
+
     })
     
     # returing data details 

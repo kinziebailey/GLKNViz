@@ -39,7 +39,7 @@ cp_ui <- function(id){
       inputId = ns("about_cp"),
       label = "About Correlation Plot"
     ),
-    plotlyOutput(ns("CorrelationPlot"))
+    girafeOutput(ns("CorrelationPlot"))
   )
 }
 
@@ -110,14 +110,6 @@ cp_server <- function(id, user_data){
                       value) |> 
         tidyr::pivot_wider(names_from = PickListName,
                            values_from = value)
-      
-      # building hover text 
-      correlation_df$hover <- paste0("<br>Site: ", correlation_df$MonitoringLocationName,
-                                     "<br>Date: ", correlation_df$end_date,
-                                     "<br>", input$select_param1, ": ", correlation_df[[input$select_param1]],
-                                     "<br>", input$select_param2, ": ", correlation_df[[input$select_param2]])
-      
-      correlation_df
     })
     
     ### Reactive for Regressions ----
@@ -160,7 +152,7 @@ cp_server <- function(id, user_data){
     })
     
     ## Render Correlation Plot ----
-    output$CorrelationPlot <- plotly::renderPlotly({
+    output$CorrelationPlot <- ggiraph::renderGirafe({
 
       # Calling datasets 
       correlation_longdf <- correlation_long()
@@ -190,27 +182,26 @@ cp_server <- function(id, user_data){
       ggcorrelation <- ggplot(data = correlation_df,
                               aes(x = .data[[input$select_param1]],
                                   y = .data[[input$select_param2]],
-                                  color = MonitoringLocationName,
-                                  text = hover)) +
-        geom_point() + 
+                                  color = MonitoringLocationName)) +
+        geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
+                                                    "\nDate: ", end_date,
+                                                    "\n", input$select_param1, ": ", .data[[input$select_param1]],
+                                                    "\n", input$select_param2, ": ", .data[[input$select_param2]]))) + 
         labs(x = x_axis,
              y = y_axis,
              color = "Site") +
         regression_type() +
         scale_color_natparks_d("Yellowstone") +
+        ggtitle(paste0("Total Measurements: ",
+                       n_data,
+                       "\nValues < Quantificantion Limit: ",
+                       n_reporting_limit,
+                       "\nValues < Detection Limit: ",
+                       n_detection_limit))  +
         theme_minimal()
       
-      ggplotly(ggcorrelation,
-               tooltip = "text") |> 
-        layout(title = list(text = paste0("Total Measurements: ",
-                                          n_data,
-                                          "\nValues < Quantificantion Limit: ",
-                                          n_reporting_limit,
-                                          "\nValues < Detection Limit: ",
-                                          n_detection_limit),
-                            font = list(size = 12),
-                            x = 0.05),
-               margin = list(t = 65))
+      girafe(ggobj = ggcorrelation)
+      
     })
     
     # returning data details 

@@ -198,9 +198,16 @@ cp_server <- function(id, user_data){
                        n_reporting_limit,
                        "\nValues < Detection Limit: ",
                        n_detection_limit))  +
-        theme_minimal()
+        theme_minimal() +
+        theme(plot.title = element_text(size = 5),
+              axis.title = element_text(size = 8),
+              axis.text = element_text(size = 6),
+              legend.text = element_text(size = 6),
+              legend.title = element_text(size = 8))
       
-      girafe(ggobj = ggcorrelation)
+      girafe(ggobj = ggcorrelation,
+             height_svg = 5,
+             width_svg = 6)
       
     })
     

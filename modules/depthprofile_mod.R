@@ -37,7 +37,7 @@ dp_ui <- function(id){
       label = "About Depth Profiles"
     ),
     girafeOutput(ns("DepthProfilePlot"),
-                    height = "auto")
+                    width = "100%")
   )
 }
 
@@ -134,7 +134,8 @@ dp_server <- function(id, user_data){
                                    y = depth,
                                    color = MonitoringLocationName)) +
         geom_path() + 
-        geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
+        geom_point_interactive(aes(#shape = ResultDetectionConditionText,
+                                   tooltip = paste0("Site: ", MonitoringLocationName,
                                                     "\nDepth: ", depth,
                                                     "\nValue: ", value))) +
         labs(x = unique(profile_data()$AxisName),
@@ -149,7 +150,12 @@ dp_server <- function(id, user_data){
                        n_reporting_limit,
                        "\nValues < Detection Limit: ",
                        n_detection_limit))  +
-        theme_minimal()
+        theme_minimal() +
+        theme(plot.title = element_text(size = 5),
+              axis.title = element_text(size = 8),
+              axis.text = element_text(size = 6),
+              legend.text = element_text(size = 6),
+              legend.title = element_text(size = 8))
       
       # adding threshold lines 
       if(input$thresholds){
@@ -161,8 +167,19 @@ dp_server <- function(id, user_data){
           scale_linetype_manual(values = c("Upper Threshold" = "dashed",
                                            "Lower Threshold" = "dotted"))
       }
-
-      girafe(ggobj = ggdepthprofile)
+      
+      # facet scaling 
+      per_row <- 3.0
+      height_in <- max(2.5,
+                       length(unique(profile_data()$year)) * per_row)
+      width_in <- 10.0
+      
+      # plotting with ggiraph
+      girafe(ggobj = ggdepthprofile,
+             height_svg = height_in,
+             width_svg = width_in,
+             opts_sizing(rescale = TRUE,
+                         width = 1))
 
     })
     

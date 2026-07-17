@@ -137,7 +137,11 @@ bp_server <- function(id, user_data){
                        "\nValues < Detection Limit: ",
                        n_detection_limit)) +
         theme_minimal() +
-        theme(plot.title = element_text(size = 12))
+        theme(plot.title = element_text(size = 5),
+              axis.title = element_text(size = 8),
+              axis.text = element_text(size = 6),
+              legend.text = element_text(size = 6),
+              legend.title = element_text(size = 8))
       
       # adding threshold lines 
       if(input$thresholds){
@@ -150,7 +154,9 @@ bp_server <- function(id, user_data){
                                            "Lower Threshold" = "dotted"))
       }
       
-    girafe(ggobj = ggboxplot)
+    girafe(ggobj = ggboxplot,
+           height_svg = 3,
+           width_svg = 6)
       
     })
     

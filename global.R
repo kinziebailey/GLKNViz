@@ -8,6 +8,7 @@ library(ggpmisc)
 library(plotly)
 library(lubridate)
 library(NatParksPalettes)
+library(ggiraph)
 
 # Load data ----
 ## WQ Data ----

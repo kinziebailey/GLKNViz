@@ -34,7 +34,10 @@ bp_ui <- function(id){
       label = "About Boxplots"
     ),
     # Plot
-    girafeOutput(ns("BoxPlot"))
+    div(style = "min-height: 300px;
+                 height: auto;",
+        girafeOutput(ns("BoxPlot"))
+    )
   )
 }
 
@@ -62,23 +65,22 @@ bp_server <- function(id, user_data){
       
       # required data
       req(input$select_param, input$date_grouping)
-      
-      # data wrangling 
-      boxplot_df1 <- user_data()
-      
-      # Warning if no data
-      shiny::validate(
-        shiny::need(nrow(boxplot_df1) > 0,
-                    "No data available for the selected Park / Site / Parameter"))
-      
+
       # continue if data exists
-      boxplot_df <- boxplot_df1 |> 
+      boxplot_df <- user_data() |> 
         # filtering parameter
         dplyr::filter(PickListName %in% input$select_param)
     })
     
     ## Render Boxplot ----
     output$BoxPlot <- ggiraph::renderGirafe({
+      
+      df <- boxplot_data()
+      
+      # Warning if no data
+      shiny::validate(
+        shiny::need(nrow(df) > 0,
+                    "No data available for the selected Park / Site / Parameter"))
       
       # Data for Threshold lines 
       threshold_df <- boxplot_data() |>

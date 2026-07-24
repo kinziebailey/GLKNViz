@@ -1,5 +1,6 @@
 # Module for the Correlation plot ----
 
+# User Interface ----
 cp_ui <- function(id){
   
   ns <- NS(id)
@@ -39,7 +40,10 @@ cp_ui <- function(id){
       inputId = ns("about_cp"),
       label = "About Correlation Plot"
     ),
+    div(style = "min-height: 300px;
+                 height: auto;",
     girafeOutput(ns("CorrelationPlot"))
+    )
   )
 }
 
@@ -67,17 +71,9 @@ cp_server <- function(id, user_data){
       
       # required data
       req(input$select_param1, input$select_param2)
-      
-      # data wrangling 
-      correlation_long1 <- user_data()
-      
-      # Warning if no data
-      shiny::validate(
-        shiny::need(nrow(correlation_long1) > 0,
-                    "No data available for the selected Park / Site / Parameter"))
-      
+
       # continue if data exists
-      correlation_long <- correlation_long1 |> 
+      correlation_long <- user_data() |> 
         dplyr::filter(PickListName %in% c(input$select_param1,
                                           input$select_param2)) |> 
         # filtering depth for averaging
@@ -154,6 +150,33 @@ cp_server <- function(id, user_data){
     ## Render Correlation Plot ----
     output$CorrelationPlot <- ggiraph::renderGirafe({
 
+      df1 <- correlation_data()
+      
+      # Warning if no data
+      shiny::validate(
+        shiny::need(nrow(df1) > 0,
+                    "No data available for the selected Park / Site / Parameter"))
+      
+      # Need both parameters 
+      ## x-axis
+      shiny::validate(
+        shiny::need(input$select_param1 %in% names(df1),
+                    "No data available for the x-axis parameter for the selected Park / Site.")
+      )
+      
+      ## y-axis
+      shiny::validate(
+        shiny::need(input$select_param2 %in% names(df1),
+                    "No data available for the y-axis parameter for the selected Park / Site.")
+      )
+      
+      ## Need paired data
+      shiny::validate(
+        shiny::need(sum(!is.na(df1[[input$select_param1]]) &
+                          !is.na(df1[[input$select_param2]])) > 0,
+                    "Not enough paired data tp produce a correlation plot.")
+      )
+      
       # Calling datasets 
       correlation_longdf <- correlation_long()
       correlation_df <- correlation_data()

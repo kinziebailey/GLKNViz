@@ -21,13 +21,19 @@ h1, h2, h3, h4 {
 
 /* Fixing dropdowns over map */
 
+/* figure zoom */
+#plot-zoom .ggiraph-tooltip,
+#plot-zoom.ggiraph-container div {
+  z-index: 10000;
+}
+
 /* drop downs */
 #park-select .selectize-control {
-  z-index: 9999;
+  z-index: 9998;
 }
 
 #site-select .selectize-control {
-  z-index: 9998;
+  z-index: 9997;
 }
 
 /* leaflet map */ 

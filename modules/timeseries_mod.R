@@ -48,7 +48,14 @@ ts_ui <- function(id){
       label = "About Time Series"
     ),
     # Plot 
-    girafeOutput(ns("TimeSeriesPlot"))
+    div(style = "min-height: 250px;
+                 height: auto;",
+        girafeOutput(ns("TimeSeriesPlot"))
+    ),
+    # saving option
+    # div(style = "margin-top: 8px;",
+    #     downloadButton(ns("download_png"),
+    #                    "Download PNG"))
   )
 }
 
@@ -76,16 +83,8 @@ ts_server <- function(id, user_data){
       # required data
       req(input$select_param, input$date_range)
       
-      # data wrangling
-      series_df1 <- user_data() 
-      
-      # Warning if no data
-      shiny::validate(
-        shiny::need(nrow(series_df1) > 0,
-                    "No data available for the selected Park / Site / Parameter"))
-      
       # continue if data exists
-      series_df <- series_df1 |> 
+      series_df <- user_data()  |> 
         # filtering parameter
         dplyr::filter(PickListName %in% input$select_param) |> 
         # filtering date
@@ -158,6 +157,13 @@ ts_server <- function(id, user_data){
     ### Render Time Series Plot ----
     output$TimeSeriesPlot <- ggiraph::renderGirafe({
       
+      df <- timeseries_data()
+      
+      # Warning if no data
+      shiny::validate(
+        shiny::need(nrow(df) > 0,
+                    "No data available for the selected Park / Site / Parameter"))
+      
       # Data for Threshold lines
       threshold_df <- timeseries_data() |>
         dplyr::select(UpperPoint,
@@ -226,9 +232,21 @@ ts_server <- function(id, user_data){
       
       girafe(ggobj = ggtimeseries,
              height_svg = 3,
-             width_svg = 6)
-
+             width_svg = 6,
+             options = list(opts_toolbar(saveaspng = FALSE)))
+      
     })
+    
+    # output$download_png <- downloadHandler(filename = function(){
+    #   paste0("timeseries_",
+    #          Sys.Date(),
+    #          ".png")
+    # },
+    # content = function(file){
+    #   ggplot2::ggsave(file,
+    #                   ggtimeseries,
+    #                   dpi = 600)
+    # })
     
     # returning data details 
     return(list(timeseries_data = timeseries_data))

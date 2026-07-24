@@ -1,5 +1,6 @@
 # Module for the depth profile plot ----
 
+# User Interface ----
 dp_ui <- function(id){
   
   ns <- NS(id) # creating a namespace
@@ -18,12 +19,14 @@ dp_ui <- function(id){
       selected = ""
     ),
     # Year Selector
-    selectInput(
+    selectizeInput(
       inputId = ns("select_year"),
       label = "Select Years",
       choices = sort(unique(wqp_data$year)),
       selected = max(wqp_data$year),
-      multiple = TRUE
+      multiple = TRUE,
+      options = list(placeholder = "Choose Year", # options for selectize
+                     plugins = list("remove_button"))
     ),
     # Thresholds Button
     checkboxInput(
@@ -36,8 +39,10 @@ dp_ui <- function(id){
       inputId = ns("about_dp"),
       label = "About Depth Profiles"
     ),
-    girafeOutput(ns("DepthProfilePlot"),
-                    width = "100%")
+    div(style = "min-height: 300px;
+                 height: auto;",
+        girafeOutput(ns("DepthProfilePlot"))
+    )
   )
 }
 
@@ -77,16 +82,8 @@ dp_server <- function(id, user_data){
       # required date
       req(input$select_param, input$select_year)
       
-      # data wrangling 
-      profile_df1 <- user_data()
-      
-      # Warning if no data
-      shiny::validate(
-        shiny::need(nrow(profile_df1) > 0,
-                    "No data available for the selected Park / Site / Parameter"))
-      
       # continue if data exists 
-      profile_df <- profile_df1 |> 
+      profile_df <- user_data() |> 
         # filtering parameter
         dplyr::filter(CharacteristicName %in% input$select_param) |> 
         # filtering date
@@ -99,6 +96,13 @@ dp_server <- function(id, user_data){
     
     ## Render Depth Profile Plot ----
     output$DepthProfilePlot <- ggiraph::renderGirafe({
+      
+      df <- profile_data()
+      
+      # Warning if no data
+      shiny::validate(
+        shiny::need(nrow(df) > 0,
+                    "No data available for the selected Park / Site / Parameter"))
       
       # Data for Threshold lines
       threshold_df <- profile_data() |>
@@ -151,11 +155,11 @@ dp_server <- function(id, user_data){
                        "\nValues < Detection Limit: ",
                        n_detection_limit))  +
         theme_minimal() +
-        theme(plot.title = element_text(size = 5),
-              axis.title = element_text(size = 8),
-              axis.text = element_text(size = 6),
-              legend.text = element_text(size = 6),
-              legend.title = element_text(size = 8))
+        theme(plot.title = element_text(size = 8),
+              axis.title = element_text(size = 11),
+              axis.text = element_text(size = 9),
+              legend.text = element_text(size = 9),
+              legend.title = element_text(size = 11))
       
       # adding threshold lines 
       if(input$thresholds){
@@ -169,7 +173,7 @@ dp_server <- function(id, user_data){
       }
       
       # facet scaling 
-      per_row <- 3.0
+      per_row <- 3.5
       height_in <- max(2.5,
                        length(unique(profile_data()$year)) * per_row)
       width_in <- 10.0
@@ -179,7 +183,7 @@ dp_server <- function(id, user_data){
              height_svg = height_in,
              width_svg = width_in,
              opts_sizing(rescale = TRUE,
-                         width = 1))
+             width = 1))
 
     })
     

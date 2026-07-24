@@ -21,20 +21,6 @@ ui <- shinyUI(
                   HTML("<span>
                   <a href='https://www.nps.gov/im/glkn/'> <img src='ah_small_black.gif'
                   alt='Water Quality Visualizer'> </a> GLKN Water Quality Data Visualizer</span>")),
-    # tags$header(
-    #   ### style ----
-    #   style = "background-color: #000;
-    #            color: white; 
-    #            padding: 15px; 
-    #            font-size: 22px; 
-    #            font-weight:bold;
-    #            margin-bottom: 10px;",
-    #   ### GLKN link ----
-    #   HTML("<span> 
-    #   <a href='https://www.nps.gov/im/glkn/'> <img src='ah_small_black.gif' 
-    #   alt='Water Quality Visualizer'> </a> GLKN Water Quality Data Visualizer</span>")
-    # ),
-    
     fluidRow(
       
       ## Left Column ----
@@ -44,7 +30,7 @@ ui <- shinyUI(
         div(id = "park-select",
             selectInput(
               "park",
-              "Park",
+              "Select Park",
               choices = c("Choose Park" = "",
                           sort(unique(wqp_data$Park))),
               selected = ""
@@ -54,7 +40,7 @@ ui <- shinyUI(
         div(id = "site-select",
             selectizeInput( # needed for deselect x on site
               "station",
-              "Site",
+              "Select Site",
               choices = sort(unique(wqp_data$MonitoringLocationName)),
               multiple = TRUE, # allows for multiple selections
               options = list(placeholder = "Choose Site", # options for selectize

@@ -60,7 +60,8 @@ details_server <- function(id, data_from){
                                "depth",
                                "AxisName",
                                "value",
-                               "value_unit"))) |> 
+                               "value_unit",
+                               "ResultDetectionConditionText"))) |> 
         dplyr::arrange(dplyr::pick(all_of(cols_existing))) |> 
         dplyr::rename(Site = MonitoringLocationName,
                       Latitude = lat,
@@ -68,7 +69,8 @@ details_server <- function(id, data_from){
                       Date = end_date,
                       Parameter = AxisName,
                       Value = value,
-                      Unit = value_unit) |> 
+                      Unit = value_unit,
+                      `Detection Condition` = ResultDetectionConditionText) |> 
         dplyr::rename_with(.fn = \(x) sub("^depth$",
                                           "Depth (m)",
                                           x),
@@ -98,28 +100,39 @@ details_server <- function(id, data_from){
       # required data
       req(get_data())
       
-      exeedance_values1 <- get_data()
-      
+      exceedance_values1 <- get_data()
+
       # warning if no data 
       shiny::validate(
-        shiny::need(nrow(exeedance_values1) > 0,
+        shiny::need(nrow(exceedance_values1) > 0,
                     "No data available for the selected Park / Site / Parameter"))
 
       # continue if data 
-      exceedance_values2 <- wqp_data |> 
-        dplyr::semi_join(exeedance_values1,
-                         by = c("Park", 
-                                "MonitoringLocationName", 
-                                "end_date",
-                                "AxisName")) |> 
+      wqp_data1 <- wqp_data |> 
+        dplyr::select(Park,
+                      MonitoringLocationName,
+                      AxisName,
+                      UpperPoint,
+                      LowerPoint,
+                      UpperDescription,
+                      LowerDescription) |> 
+        dplyr::distinct() 
+
+      exceedance_values2 <- exceedance_values1 |>
+        dplyr::left_join(wqp_data1) |>  #,
+                         # by = join_by(Park,
+                         #              MonitoringLocationName,
+                         #              AxisName,
+                         #              UpperPoint,
+                         #              LowerPoint,)) |>
         dplyr::filter(value > UpperPoint | value < LowerPoint) 
       
-      # Selecting existing coluns to arrange by 
+      # Selecting existing columns to arrange by 
       cols_e <- c("Park", 
-                "MonitoringLocationName", 
-                "end_date", 
-                "AxisName", 
-                "depth")
+                  "MonitoringLocationName", 
+                  "end_date", 
+                  "AxisName", 
+                  "depth")
       
       cols_e_existing <- intersect(cols_e, names(exceedance_values2))
       

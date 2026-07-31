@@ -84,7 +84,7 @@ ts_server <- function(id, user_data){
       req(input$select_param, input$date_range)
       
       # continue if data exists
-      series_df <- user_data()  |> 
+      user_data()  |> 
         # filtering parameter
         dplyr::filter(PickListName %in% input$select_param) |> 
         # filtering date

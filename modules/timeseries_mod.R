@@ -157,15 +157,15 @@ ts_server <- function(id, user_data){
     ### Render Time Series Plot ----
     output$TimeSeriesPlot <- ggiraph::renderGirafe({
       
-      df <- timeseries_data()
+      timeseries_df <- timeseries_data()
       
       # Warning if no data
       shiny::validate(
-        shiny::need(nrow(df) > 0,
+        shiny::need(nrow(timeseries_df) > 0,
                     "No data available for the selected Park / Site / Parameter"))
       
       # Data for Threshold lines
-      threshold_df <- timeseries_data() |>
+      threshold_df <- timeseries_df |>
         dplyr::select(UpperPoint,
                       LowerPoint) |> 
         dplyr::distinct() |> 
@@ -178,39 +178,58 @@ ts_server <- function(id, user_data){
       
       # Reporting Limits 
       ## number of values plotted
-      n_data <- timeseries_data() |> 
+      n_data <- timeseries_df |> 
         dplyr::filter(!is.na(value)) |> 
         dplyr::tally()
       
       ## below quantification limit
-      n_reporting_limit <- timeseries_data() |> 
-        dplyr::filter(ResultDetectionConditionText == "Present Below Quantification Limit") |> 
+      n_below_quant <- timeseries_df |> 
+        dplyr::filter(ResultDetectionConditionText == "< Quantification Limit") |> 
         dplyr::tally()
       
-      ## below detection limit
-      n_detection_limit <- timeseries_data() |> 
+      ## above quantification limit
+      n_above_quant <- timeseries_df |> 
+        dplyr::filter(ResultDetectionConditionText == "> Quantification Limit") |> 
+        dplyr::tally()
+      
+      ## not detected
+      n_detection_limit <- timeseries_df |> 
         dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
         dplyr::tally()
       
+      ## not reported
+      n_report_limit <- timeseries_df |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Reported") |> 
+        dplyr::tally()
+      
+      # filtering out NA values for plotting 
+      timeseries_df1 <- timeseries_df |> 
+        dplyr::filter(!is.na(value))
+      
       # plotting
-      ggtimeseries <- ggplot(data = timeseries_data(),
+      ggtimeseries <- ggplot(data = timeseries_df1,
                              aes(end_date,
                                  value,
                                  color = MonitoringLocationName)) +
         geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
                                                     "\nDate: ", end_date,
-                                                    "\nValue: ", value))) +
-        geom_line() + 
+                                                    "\nValue: ", value,
+                                                    "\n", ResultDetectionConditionText))) +
+        geom_line(na.rm = FALSE) + 
         labs(x = "Date",
-             y = unique(timeseries_data()$AxisName),
+             y = unique(timeseries_df$AxisName),
              color = "Site") +
         regression_type() +
-        ggtitle(paste0("Total Measurements: ",
+        ggtitle(paste0("Total Measurements Plotted: ",
                        n_data,
-                       "\nValues < Quantificantion Limit: ",
-                       n_reporting_limit,
+                       "\nValues < Quantification Limit: ",
+                       n_below_quant,
+                       "\nValues > Quantification Limit: ",
+                       n_above_quant,
                        "\nValues < Detection Limit: ",
-                       n_detection_limit)) +
+                       n_detection_limit,
+                       "\nValues Not Reported: ",
+                       n_report_limit)) +
         scale_color_natparks_d("Yellowstone") +
         theme_minimal() +
         theme(plot.title = element_text(size = 5),

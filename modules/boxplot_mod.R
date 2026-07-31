@@ -101,13 +101,23 @@ bp_server <- function(id, user_data){
         dplyr::tally()
       
       ## below quantification limit
-      n_reporting_limit <- boxplot_data() |> 
-        dplyr::filter(ResultDetectionConditionText == "Present Below Quantification Limit") |> 
+      n_below_quant <- boxplot_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "< Quantification Limit") |> 
         dplyr::tally()
       
-      ## below detection limit
+      ## above quantification limit
+      n_above_quant <- boxplot_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "> Quantification Limit") |> 
+        dplyr::tally()
+      
+      ## not detected
       n_detection_limit <- boxplot_data() |> 
         dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
+        dplyr::tally()
+      
+      ## not reported
+      n_report_limit <- boxplot_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Reported") |> 
         dplyr::tally()
       
       # Correcting Label Names 
@@ -132,12 +142,16 @@ bp_server <- function(id, user_data){
              y = unique(boxplot_data()$AxisName),
              fill = "Site") + 
         scale_fill_natparks_d("Yellowstone") +
-        ggtitle(paste0("Total Measurements: ",
+        ggtitle(paste0("Total Measurements Plotted: ",
                        n_data,
-                       "\nValues < Quantificantion Limit: ",
-                       n_reporting_limit,
+                       "\nValues < Quantification Limit: ",
+                       n_below_quant,
+                       "\nValues > Quantification Limit: ",
+                       n_above_quant,
                        "\nValues < Detection Limit: ",
-                       n_detection_limit)) +
+                       n_detection_limit,
+                       "\nValues Not Reported: ",
+                       n_report_limit)) +
         theme_minimal() +
         theme(plot.title = element_text(size = 5),
               axis.title = element_text(size = 8),

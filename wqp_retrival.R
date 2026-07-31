@@ -22,11 +22,6 @@ library(stringr) # data wrangling
 library(tidyr) # data wrangling 
 library(purrr) # map functions
 
-
-# For Aquarius Data 
-# remotes::install_github("nationalparkservice/imd-fetchaquarius")  # note repo name diff from package name
-# library(fetchaquarius)
-
 # Loading data ----
 # station data 
 glkn_stations <- read_csv("./data/station.csv")
@@ -37,8 +32,7 @@ chr_lookup <- read_csv("./data/chr_lookup.csv")
 # wqp threshold data 
 thresholds <- read_csv("./data/thresholds.csv")
 
-# Getting WQP Data ---- 
-# THIS IS EXTREMELY SLOW ----
+# OPTION: Getting WQP Data ---- 
 # parks <- sort(unique(glkn_stations$Park))
 # 
 # WQPViews <- lapply(parks, function(park){
@@ -73,15 +67,14 @@ thresholds <- read_csv("./data/thresholds.csv")
 
 
 
-# ==========================================================================================================
+# new data import
 
 # data_full <- readWQPdata(siteid = "11NPSWRD_WQX-VOYA_01",
 #                          # characteristicName = "pH",
 #                          # dataProfile = "fullPhysChem",
 #                          service = "ResultWQX3")
 
-# ==========================================================================================================
-
+# Getting WQP Data ---- 
 # Looping through parks to get WQP data. This will give you updated data for all
 # parks and sites listed in stations.csv. ----
 WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
@@ -123,6 +116,9 @@ WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
 # creating dataframe
 wqp_data_all <- bind_rows(WQPViews)
 
+write_csv(wqp_data_all,
+          "./data/wqp_glkn_all.csv")
+
 # Data Wrangling ----
 
 ## removing unneeded data ----
@@ -130,6 +126,7 @@ wqp_data1 <- wqp_data_all |>
   # removing unneeded CharacteristicNames
   semi_join(chr_lookup,
             by = join_by(CharacteristicName)) |> 
+  mutate(year = year(ActivityEndDate)) |> 
   # removing quality control
   filter(!grepl("Quality Control",
                 ActivityTypeCode)) |> 
@@ -149,15 +146,22 @@ wqp_data1 <- wqp_data_all |>
                                      "Nitrogen",
                                      "Phosphorus") & 
              SampleCollectionEquipmentName == "Van Dorn Bottle")) |> 
-  filter(!LaboratoryName == "White Water Associates") |> 
+  filter(!(LaboratoryName == "White Water Associates" &
+             year >= 2014)) |>
   # removing non-detected data
-  filter(!ResultDetectionConditionText == "Not Detected") |> 
+  # filter(!ResultDetectionConditionText == "Not Detected") |> 
   # adding censored data conditions
   mutate(ResultMeasureValue = case_when(ResultDetectionConditionText == "Present Below Quantification Limit" ~ 
                                           str_extract(ResultCommentText, "\\d*\\.?\\d+"),
-                                        TRUE ~ ResultMeasureValue)) |> 
-  # correcting depth measurements
-  mutate(ActivityDepthHeightMeasure.MeasureValue = if_else(ActivityDepthHeightMeasure.MeasureValue < 0, 0,
+                                        TRUE ~ ResultMeasureValue),
+         # adding to ResultDetectionConditionText
+         ResultDetectionConditionText = case_when(
+           ResultDetectionConditionText == "Present Above Quantification Limit" ~ "> Quantification Limit",
+           ResultDetectionConditionText == "Present Below Quantification Limit" ~ "< Quantification Limit",
+           ResultDetectionConditionText == "" ~ "Within Quantification Limit",
+           TRUE ~ ResultDetectionConditionText),
+         # correcting depth measurements
+         ActivityDepthHeightMeasure.MeasureValue = if_else(ActivityDepthHeightMeasure.MeasureValue < 0, 0,
                                                            ActivityDepthHeightMeasure.MeasureValue),
          ActivityDepthHeightMeasure.MeasureValue = -abs(ActivityDepthHeightMeasure.MeasureValue),
          ResultMeasureValue = as.numeric(ResultMeasureValue))
@@ -165,7 +169,10 @@ wqp_data1 <- wqp_data_all |>
 ## adding station data ----
 wqp_data_stations <- wqp_data1 |>
   # adding station data
-  left_join(glkn_stations)
+  left_join(glkn_stations,
+            by = join_by(OrganizationIdentifier,
+                         OrganizationFormalName,
+                         MonitoringLocationIdentifier))
 
 ## adding threshold data ----
 
@@ -180,7 +187,9 @@ thresh_no <- thresholds |>
 
 ### joining thresholds that have MonitoringLocationName
 wqp_data_ml <- wqp_data_stations |>
-  left_join(thresh_mln)
+  left_join(thresh_mln,
+            by = join_by(CharacteristicName,
+                         Park, MonitoringLocationName))
 
 ### joining thresholds that have no MonitoringLocationName
 wqp_data_thresh <- wqp_data_ml |>
@@ -257,96 +266,3 @@ wqp_data <- wqp_data_new |>
 # Writing the new wqp_data ----
 write_csv(wqp_data,
           "./data/wqp_glkn.csv")
-
-
-# Getting Aquarius Data ----
-## Note: make sure you are connected to the VPN
-## This code takes a while to run and it is just because there is so much data.
-
-## Toolbox
-# source("https://raw.githubusercontent.com/AndrewBirchHydro/albAquariusTools/main/Aquarius%20basics.R")
-# timeseries$connect("https://aquarius.nps.gov/aquarius", "aqreadonly", "aqreadonly")
-# publishapiurl='https://aquarius.nps.gov/aquarius/Publish/v2'
-# 
-# # Sites 
-# # Lake Richie == GLKN_ISRO_03
-# # Grand Sable == PIRO_01
-# # Beaver == PIRO_04
-# # Manitou == SLBE_01
-# # Bass (North) == SLBE_05
-# # Shoepack == VOYA_05
-# # Little Trout == VOYA_21
-# # Mukooda == VOYA_22
-# 
-# # Temp Arrays 
-# # Starts with: Water Temp
-# # Ends with: _array
-# 
-# temp_sites <- c("GLKN_ISRO_03",
-#                 "GLKN_PIRO_01",
-#                 "GLKN_PIRO_04",
-#                 "GLKN_SLBE_01",
-#                 "GLKN_SLBE_05",
-#                 "GLKN_VOYA_05",
-#                 "GLKN_VOYA_21",
-#                 "GLKN_VOYA_22")
-# 
-# # Getting list of water temp data at each site
-# temp_data_all <- map_dfr(temp_sites, function(site){
-#   
-#   # Get dataset for site 
-#   # data <- Print_datasets(site)
-#   text <- capture.output(data <- Print_datasets(site))
-#   
-#   # Water Temp Datasets 
-#   temp_data <- data$Identifier[grepl("Water Temp",
-#                                      data$Identifier,
-#                                      ignore.case = FALSE) & ! grepl("backup|borrowed|Historical|Inverse",
-#                                                                     data$Identifier)]
-#   
-#   # get each dataset and "clean it up"
-#   map_dfr(temp_data, function(depth){
-#     
-#     # message
-#     message("Getting data for ", depth)
-#     
-#     # get raw data 
-#     raw_timeseries <- Get_timeseries2(record = depth)
-#     
-#     # catching NULL for empty data
-#     if(is.null(raw_timeseries) || length(raw_timeseries) == 0){
-#       message("Skipping epty dataset: ", depth)
-#       return(NULL)
-#     }
-#     
-#     # cleaning up
-#     temp_array <- try(TS_simplify(data = raw_timeseries), silent = TRUE)
-#     
-#     # catching errors and NULLs in TS_simplify
-#     if(inherits(temp_array, "try-error") || is.null(temp_array)){
-#       message("Could not 'clean up' dataset: ", depth)
-#       return(NULL)
-#     }
-#     
-#     # adding information
-#     temp_array |> 
-#       dplyr::mutate(#site = site,
-#                     dataset = depth)
-#   })
-# })
-# 
-# # Data Wrangling ----
-# temp_data <- temp_data_all |> 
-#   tidyr::separate_wider_regex(dataset,
-#                               patterns = c("[^.]*\\.", # ignore everything up to the last period
-#                                            dataset = "[^@]+", # everything before @
-#                                            "@",
-#                                            network = "[^_]+", # characters until _
-#                                            "_",
-#                                            site = ".*")) |>  # everything after _
-#   dplyr::mutate(park = str_extract(site,
-#                                    "[^_]+"))
-#   
-# # Writing to 'data' folder ----
-# write_csv(temp_data,
-#           "./data/temp_array_data.csv")

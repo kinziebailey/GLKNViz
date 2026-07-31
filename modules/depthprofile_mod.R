@@ -28,6 +28,15 @@ dp_ui <- function(id){
       options = list(placeholder = "Choose Year", # options for selectize
                      plugins = list("remove_button"))
     ),
+    # Depth Range Selector 
+    sliderInput(
+      inputId = ns("depth_range"),
+      label = "Select Depths",
+      min = min(wqp_data$depth, na.rm = TRUE),
+      max = max(wqp_data$depth, na.rm = TRUE),
+      value = c(min(wqp_data$depth, na.rm = TRUE),
+                max(wqp_data$depth, na.rm = TRUE))
+    ),
     # Thresholds Button
     checkboxInput(
       inputId = ns("thresholds"),
@@ -80,7 +89,7 @@ dp_server <- function(id, user_data){
     profile_data <- reactive({
       
       # required date
-      req(input$select_param, input$select_year)
+      req(input$select_param, input$select_year, input$depth_range)
       
       # continue if data exists 
       profile_df <- user_data() |> 
@@ -88,7 +97,9 @@ dp_server <- function(id, user_data){
         dplyr::filter(CharacteristicName %in% input$select_param) |> 
         # filtering date
         dplyr::filter(year %in% input$select_year) |> 
-        # dplyr::mutate(month = lubridate::month(end_date)) |> 
+        # filtering date
+        dplyr::filter(depth >= input$depth_range[1],
+                      depth <= input$depth_range[2]) |> 
         dplyr::arrange(MonitoringLocationName,
                        end_date,
                        depth)
@@ -123,13 +134,23 @@ dp_server <- function(id, user_data){
         dplyr::tally()
       
       ## below quantification limit
-      n_reporting_limit <- profile_data() |> 
-        dplyr::filter(ResultDetectionConditionText == "Present Below Quantification Limit") |> 
+      n_below_quant <- profile_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "< Quantification Limit") |> 
         dplyr::tally()
       
-      ## below detection limit
+      ## above quantification limit
+      n_above_quant <- profile_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "> Quantification Limit") |> 
+        dplyr::tally()
+      
+      ## not detected
       n_detection_limit <- profile_data() |> 
         dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
+        dplyr::tally()
+      
+      ## not reported
+      n_report_limit <- profile_data() |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Reported") |> 
         dplyr::tally()
       
       # plotting
@@ -138,22 +159,26 @@ dp_server <- function(id, user_data){
                                    y = depth,
                                    color = MonitoringLocationName)) +
         geom_path() + 
-        geom_point_interactive(aes(#shape = ResultDetectionConditionText,
-                                   tooltip = paste0("Site: ", MonitoringLocationName,
+        geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
                                                     "\nDepth: ", depth,
-                                                    "\nValue: ", value))) +
+                                                    "\nValue: ", value,
+                                                    "\n", ResultDetectionConditionText))) +
         labs(x = unique(profile_data()$AxisName),
              y = "Depth (m)",
              color = "Site") +
         facet_grid(row = vars(year),
                    cols = vars(month_name)) +
         scale_color_natparks_d("Yellowstone") +
-        ggtitle(paste0("Total Measurements: ",
+        ggtitle(paste0("Total Measurements Plotted: ",
                        n_data,
-                       "\nValues < Quantificantion Limit: ",
-                       n_reporting_limit,
+                       "\nValues < Quantification Limit: ",
+                       n_below_quant,
+                       "\nValues > Quantification Limit: ",
+                       n_above_quant,
                        "\nValues < Detection Limit: ",
-                       n_detection_limit))  +
+                       n_detection_limit,
+                       "\nValues Not Reported: ",
+                       n_report_limit))  +
         theme_minimal() +
         theme(plot.title = element_text(size = 8),
               axis.title = element_text(size = 11),

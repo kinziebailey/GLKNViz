@@ -115,7 +115,8 @@ details_server <- function(id, data_from){
                       UpperPoint,
                       LowerPoint,
                       UpperDescription,
-                      LowerDescription) |> 
+                      LowerDescription,
+                      Reference) |> 
         dplyr::distinct() 
 
       exceedance_values2 <- exceedance_values1 |>
@@ -149,7 +150,8 @@ details_server <- function(id, data_from){
                                "LowerPoint",
                                "UpperPoint",
                                "LowerDescription",
-                               "UpperDescription"))) |>  
+                               "UpperDescription",
+                               "Reference"))) |>  
         dplyr::arrange(dplyr::pick(all_of(cols_e_existing))) |>
         dplyr::rename(Site = MonitoringLocationName,
                       Latitude = lat,
@@ -159,7 +161,8 @@ details_server <- function(id, data_from){
                       Value = value,
                       Units = value_unit,
                       `Lower Threshold` = LowerPoint,
-                      `Upper Threshold` = UpperPoint) |> 
+                      `Upper Threshold` = UpperPoint,
+                      Reference = Reference) |> 
         dplyr::rename_with(.fn = \(x) sub("^depth$",
                                           "Depth (m)",
                                           x),

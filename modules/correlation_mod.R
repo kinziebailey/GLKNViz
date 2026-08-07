@@ -105,6 +105,7 @@ cp_server <- function(id, user_data){
                       PickListName,
                       value,
                       ResultDetectionConditionText) |> 
+        tidyr::drop_na() |> 
         tidyr::pivot_wider(names_from = PickListName,
                            values_from = c(value,
                                            ResultDetectionConditionText))

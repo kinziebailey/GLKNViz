@@ -21,6 +21,7 @@ library(dplyr) # data wrangling
 library(stringr) # data wrangling
 library(tidyr) # data wrangling 
 library(purrr) # map functions
+library(lubridate) # data wrangling
 
 # Loading data ----
 # station data 
@@ -158,7 +159,7 @@ wqp_data1 <- wqp_data_all |>
          ResultDetectionConditionText = case_when(
            ResultDetectionConditionText == "Present Above Quantification Limit" ~ "> Quantification Limit",
            ResultDetectionConditionText == "Present Below Quantification Limit" ~ "< Quantification Limit",
-           ResultDetectionConditionText == "" ~ "Within Quantification Limit",
+           ResultDetectionConditionText == "" ~ "Detected and Quantified",
            TRUE ~ ResultDetectionConditionText),
          # correcting depth measurements
          ActivityDepthHeightMeasure.MeasureValue = if_else(ActivityDepthHeightMeasure.MeasureValue < 0, 0,
@@ -260,6 +261,7 @@ wqp_data <- wqp_data_new |>
          UpperPoint,
          LowerDescription,
          UpperDescription,
+         Reference,
          PickListName,
          AxisName)
   

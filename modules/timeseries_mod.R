@@ -108,7 +108,8 @@ ts_server <- function(id, user_data){
                                  AxisName,
                                  LowerPoint,
                                  UpperPoint,
-                                 ResultDetectionConditionText)) |>
+                                 ResultDetectionConditionText,
+                                 Reference)) |>
         dplyr::arrange(Park,
                        MonitoringLocationName,
                        end_date,

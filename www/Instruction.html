@@ -6,72 +6,111 @@
 <div style = "margin-left: 20px">
     
     <h3>Introduction</h3>
-    <P>The Great Lakes Inventory and Monitoring Network 
-    <a href = "https://www.nps.gov/im/glkn/index.htm">(GLKN)</a> is part of the 
-    National Park Service (NPS) Inventory and Monitoring Division. GLKN conducts 
-    long-term ecological monitoring in the following parks: Apostle Islands
-    National Lakeshore, Grand Portage National Monument, Indiana Dunes National 
-    Park, Isle Royale National Park, Mississippi National River and Recreation 
-    Area, Pictured Rocks National Lakeshore, Sleeping Bear Dunes National 
-    Lakeshore, St. Croix National Scenic Riverway, and Voyageurs National Park. 
-    GLKN’s inventory and monitoring work provides park managers with status and 
-    trends data on vital signs that represent the health of natural resources, 
-    including lake, river, and stream water quality, in most parks in the GLKN.</P>
+    <p>The Inventory & Monitoring (I&M) Division provides science to National 
+    Park managers, so they can make sound, science-based management decisions 
+    to conserve America’s most treasured places. <a href="https://www.nps.gov/im/glkn/index.htm">The
+    Great Lakes Inventory and Monitoring Network</a> (GLKN) is part of the I&M 
+    and conducts long-term ecological monitoring in the following parks: Apostle 
+    Islands National Lakeshore, Grand Portage National Monument, Indiana Dunes 
+    National Park, Isle Royale National Park, Mississippi National River and 
+    Recreation Area, Pictured Rocks National Lakeshore, Sleeping Bear Dunes 
+    National Lakeshore, St. Croix National Scenic Riverway, and Voyageurs 
+    National Park. GLKN’s inventory and monitoring work provides park managers 
+    with status and trends data on vital signs that represent the health of
+    natural resources, including lake, river, and stream water quality in most 
+    parks in the network.</p>
     
-<hr style = "margin: 10px 40px;" style = "margin: 10px 40px;">    
-
-    <h3>Instructions</h3>
-    <p>This visualizer tool allows users to explore and easily download water 
-    quality data. It uses data published in the 
-    <br><a href = "https://www.waterqualitydata.us/">USGS Water Quality Portal</a>
-    (WQP). The WQP integrates and provides access to publicly available 
-    water-quality data from databases such as USGS NWIS and BioData, EPA STORET,
-    and USDA-ARS STEWARDS through a single search interface. More information on 
-    GLKN’s water quality data and constituent databases is in the About tab.  
+    <h3>Purpose</h3>
+    <p>The <a href = "https://www.waterqualitydata.us/">Water Quality Portal</a>
+    (WQP) is a data portal that provides access to publicaly available discrete
+    water-quality data. This isualizer tool uses data GLKN publishes on the WQP 
+    so users can easily explore, analyze, and download water quality data for 
+    parks in the network. More information on GLKN's water quality monitoring
+    can be found in the About tab. 
     <br><br>
-    <p>This visualizer plots data collected by the GLKN. To run the visualizer, 
-    follow these basic steps below:</p>
+    The analytical tools and comparisons to ecologically meaningful thresholds 
+    provided in this visualizer are for data exploration purposes only. Any 
+    noteworthy trends or data that commonly exceed thresholds would require 
+    further exploration and confirmation using rigorous analytical techniques, 
+    with findings subjected to scientific peer review.
+    </p>
+
+    <h3>Basic Operation</h3>
+    <p> To run the visualizer, follow these basic steps below:
       <ol style = "margin: 10px 40px;">
-        <li>Select <strong> Park </strong> of interest</li>
-        <li>Select one or more <strong> Site </strong> of interest</li>
+        <li>Review this <strong>Instructions</strong> and <strong>About</strong> tabs</li>
+        <li>Select <strong>Park</strong> of interest</li>
+        <li>Select one or more <strong>Site(s)</strong> of interest</li>
         <li>The map will zoom to the last Site selected</li>
-        <li>Select the <strong> Plot </strong> of interest from the tabs at the 
+        <li>Select the <strong>Figure</strong> of interest from the tabs at the 
         top</li>
-        <li>Select a <strong> Parameter(s) </strong> to plot</li>
-        <li>Select <strong> Years </strong> of interest</li>
+        <li>Select a <strong>Parameter(s)</strong> to plot</li>
+        <li>Select <strong>Year(s)</strong> of interest</li>
       </ol>
-<br>
+      </p>
+    
+    <h3>Additional Features</h3>
+    <ol style = "margin: 10px 40px;">
+        <li>Each figure type has an associated About button. When clicked, a 
+        popup window will appear with information specific to each figure</li>
+        <li>To download a figure or make full screen, hover the mouse above the 
+        figure and buttons will become visible in the upper right corner. Select
+        the button that corresponds to the action you are interested in.</li>
+        <li>Hovering the mouse over single data point (or boxplot) on a figure 
+        will create a small pop-up window with information about that data point
+        (or boxplot).</li>
+        <li>Information about the total number of measurements plotted and 
+        number of censored data points are shown above each figure. The numbers 
+        for the different measurement categories are a function of the time 
+        period selected.</li>
+        <li>Ecologically meaningful, parameter specific thresholds can be 
+        plotted by clicking the box next to Thresholds. The Exceedances table 
+        below each figure contains references and descriptions of threshold 
+        values. Note: Threshold values can be state and site-specific and may 
+        change depending on the park and site of interest.</li>
+        <li>Linear, locally estimated scatterplot smoothing (LOESS), and 
+        polynomial regression types can be selected for Time Series and 
+        Correlation figures.</li>
+        <li>Data associated with each figure are shown in the Figure Data tab 
+        below each figure. Data plotted in the figure determine what values are 
+        displayed in the Figure Data tab. The same is true for the Exceedances 
+        tab.</li>
+        <li>Data can be copied or downloaded as a .csv or .xlsx file by clicking
+        on the buttons on the top left of either table.</li>
+      </ol>
 
     <h3>General Notes</h3>
     
     <ol style = "margin: 10px 40px;">
-      <li>All data in this visualizer are fully QAQC'd and available to the 
+      <li>All data in this visualizer are fully QA/QC’d and available to the 
       public.</li>
-      <li>Data are added to this visualizer annually, with an approximately 
-      one-year lag from the current year to allow for full data QAQC and 
-      publication.</li>
-      <li>To be included in this visualizer, a site must have at least five 
-      years of data available or be actively monitored by GLKN.</li>
-      <li>Not all parameters are available for every site. For example, at our 
-      river sites we measure water clarity with total suspended solids and not
-      with a Secchi disk, whereas at our lake sites the opposite is true.</li>
+      <li>Data are added to the visualizer annually, with a lag time of 
+      approximately one-year from the current year, to allow for full data QA/QC
+      and publication.</li>
+      <li>To be included in the visualizer, a site must have at least five years 
+      of data available or be actively monitored by GLKN.</li>
+      <li>Values reported by analytical laboratories that fall under the lower 
+      quantification limit (also commonly referred to as < reporting limit or < 
+      method reporting limit) but above the detection limit are included as data
+      points in the figures, but should be treated with caution. Those values 
+      are less accurate than values at or above the lower quantification limit. 
+      Values that were under the detection limit as reported by laboratories are
+      not included in the visualizer but the total number of data points meeting
+      that condition are reported above the figure.</li>
+      <li>Not all parameters are available for every site. For example, water 
+      clarity is measured with total suspended solids at river sites, while
+      Secchi disk depth is measured at lake sites.</li>
       <li>Secchi disk depth, bottom depth, and water level are physical 
       measurements not associated with collection of a water sample.</li>
       <li>Water samples are collected near the surface in the upper 2 meters of 
       the lake, river, or stream.</li>
-      <li>The Profile Plots tab only shows water quality parameters measured 
-      with a sonde from the surface to the bottom of a water body.</li>
-      <li>The Time Series, Boxplot, and Correlation Plot tabbs only show data collected in the upper 2 meters, except for parameters collected as physical measurements.</li>
+      <li>The Profile Figures tab only shows water quality parameters measured 
+      with a sonde, from the surface to the bottom of a water body.</li>
+      <li>The Time Series, Boxplot, and Correlation Figures tabs only show data 
+      collected in the upper 2 meters, except for parameters collected as 
+      physical measurements.</li>
     </ol>
 <br>
-
-    <h3>Analytical Tools</h3>
-    
-    <h3>Downloading Data</h3>
-    
-    <h3>Downloading Figures</h3>
-    
-    <h3>Water Quality Thresholds</h3>
 
   </div>
 </fontsize>

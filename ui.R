@@ -71,7 +71,7 @@ ui <- shinyUI(
                ),
                tabPanel(
                  # Tab Name
-                 h4("Profile Plots"),
+                 h4("Depth Profiles"),
                  # depthprofile_mod.R
                  dp_ui("dp"),
                  details_ui("details_dp")

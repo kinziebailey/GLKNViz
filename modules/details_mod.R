@@ -7,7 +7,7 @@ details_ui <- function(id){
   
   tabsetPanel(
     id = ns("data_tabs"),
-    tabPanel("Table",
+    tabPanel("Figure Data",
              DT::DTOutput(ns("table"))),
     tabPanel("Exceedances",
              DT::DTOutput(ns("exceedances")))

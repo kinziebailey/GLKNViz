@@ -38,16 +38,44 @@ server <- function(input, output, session){
   })
   
   # Map Reactive ----
+  
+  # map cache
+  base_map <- reactiveVal(NULL)
+  
+  observe({
+    if(is.null(base_map())) {
+      
+      m <- leaflet(wqp_data) |> 
+        addTiles() |> 
+        addCircleMarkers(lng = ~lon,
+                         lat = ~lat,
+                         radius = 5,
+                         color = "blue") |> 
+        fitBounds(lng1 = min(wqp_data$lon, na.rm = TRUE),
+                  lat1 = min(wqp_data$lat, na.rm = TRUE),
+                  lng2 = max(wqp_data$lon, na.rm = TRUE),
+                  lat2 = max(wqp_data$lat, na.rm = TRUE))
+      
+      base_map(m)
+    }
+  })
+  
+  # Map ----
+  
+  output$map <- renderLeaflet({
+    base_map()
+  })
+  
   observeEvent(input$station, {
     req(input$station)
-    
+
     # selecting last station to zoom to
     last_station <- tail(input$station, 1)
-    
+
     site <- wqp_data |>
-      dplyr::filter(MonitoringLocationName == last_station) |> 
+      dplyr::filter(MonitoringLocationName == last_station) |>
       dplyr::distinct()
-    
+
     leafletProxy("map") |>
       setView(lng = site$lon[1],
               lat = site$lat[1],
@@ -56,22 +84,6 @@ server <- function(input, output, session){
       addPopups(lng = site$lon[1],
                 lat = site$lat[1],
                 popup = site$MonitoringLocationName[1])
-  })
-  
-  # Map ----
-  output$map <- leaflet::renderLeaflet({
-    
-    ## Initial map ----
-    leaflet(wqp_data) |>
-      addTiles() |>
-      addCircleMarkers(lng = ~lon,
-                       lat = ~lat,
-                       radius = 5,
-                       color = "blue") |>
-      fitBounds(lng1 = min(wqp_data$lon, na.rm = TRUE),
-                lat1 = min(wqp_data$lat, na.rm = TRUE),
-                lng2 = max(wqp_data$lon, na.rm = TRUE),
-                lat2 = max(wqp_data$lat, na.rm = TRUE))
   })
   
   # Parent Servers ----

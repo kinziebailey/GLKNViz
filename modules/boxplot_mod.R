@@ -140,7 +140,8 @@ bp_server <- function(id, user_data){
                                                             }))) + 
         labs(x = x_axis,
              y = unique(boxplot_data()$AxisName),
-             fill = "Site") + 
+             fill = "Site",
+             alt = "A boxplot firgure for the parameter of interest.") + 
         scale_fill_natparks_d("Yellowstone") +
         ggtitle(paste0("Total Measurements Plotted: ",
                        n_data,

@@ -157,7 +157,8 @@ dp_server <- function(id, user_data){
       ggdepthprofile <- ggplot(data = profile_data(),
                                aes(x = value,
                                    y = depth,
-                                   color = MonitoringLocationName)) +
+                                   color = MonitoringLocationName,
+                                   shape = MonitoringLocationName)) +
         geom_path() + 
         geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
                                                     "\nDepth: ", depth,
@@ -165,7 +166,9 @@ dp_server <- function(id, user_data){
                                                     "\n", ResultDetectionConditionText))) +
         labs(x = unique(profile_data()$AxisName),
              y = "Depth (m)",
-             color = "Site") +
+             color = "Site",
+             shape = "Site",
+             alt = "A depth profile figure for parameter of intrest.") +
         facet_grid(row = vars(year),
                    cols = vars(month_name)) +
         scale_color_natparks_d("Yellowstone") +

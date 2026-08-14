@@ -225,7 +225,8 @@ cp_server <- function(id, user_data){
       ggcorrelation <- ggplot(data = correlation_df,
                               aes(x = .data[[x]],
                                   y = .data[[y]],
-                                  color = MonitoringLocationName)) +
+                                  color = MonitoringLocationName,
+                                  shape = MonitoringLocationName)) +
         geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
                                                     "\nDate: ", end_date,
                                                     "\n", input$select_param1, ": ", .data[[x]], 
@@ -234,7 +235,9 @@ cp_server <- function(id, user_data){
                                                           " (", .data[[result_y]], ")"))) + 
         labs(x = x_axis,
              y = y_axis,
-             color = "Site") +
+             color = "Site",
+             shape = "Site",
+             alt = "A plot of the correlation between the two parameters of interest.") +
         regression_type() +
         scale_color_natparks_d("Yellowstone") +
         ggtitle(paste0("Total Measurements Plotted: ",

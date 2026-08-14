@@ -52,10 +52,6 @@ ts_ui <- function(id){
                  height: auto;",
         girafeOutput(ns("TimeSeriesPlot"))
     ),
-    # saving option
-    # div(style = "margin-top: 8px;",
-    #     downloadButton(ns("download_png"),
-    #                    "Download PNG"))
   )
 }
 
@@ -211,7 +207,8 @@ ts_server <- function(id, user_data){
       ggtimeseries <- ggplot(data = timeseries_df1,
                              aes(end_date,
                                  value,
-                                 color = MonitoringLocationName)) +
+                                 color = MonitoringLocationName,
+                                 shape = MonitoringLocationName)) +
         geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
                                                     "\nDate: ", end_date,
                                                     "\nValue: ", value,
@@ -219,7 +216,9 @@ ts_server <- function(id, user_data){
         geom_line(na.rm = FALSE) + 
         labs(x = "Date",
              y = unique(timeseries_df$AxisName),
-             color = "Site") +
+             color = "Site",
+             shape = "Site",
+             alt = "A timeseries figure of the parameter of instrest.") +
         regression_type() +
         ggtitle(paste0("Total Measurements Plotted: ",
                        n_data,
@@ -256,17 +255,6 @@ ts_server <- function(id, user_data){
              options = list(opts_toolbar(saveaspng = FALSE)))
       
     })
-    
-    # output$download_png <- downloadHandler(filename = function(){
-    #   paste0("timeseries_",
-    #          Sys.Date(),
-    #          ".png")
-    # },
-    # content = function(file){
-    #   ggplot2::ggsave(file,
-    #                   ggtimeseries,
-    #                   dpi = 600)
-    # })
     
     # returning data details 
     return(list(timeseries_data = timeseries_data))

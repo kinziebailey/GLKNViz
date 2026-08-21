@@ -117,8 +117,15 @@ WQPViews <- lapply(sort(unique(glkn_stations$Park)), function(park){
 # creating dataframe
 wqp_data_all <- bind_rows(WQPViews)
 
+# writing csv for visualizer if needed
 write_csv(wqp_data_all,
           "./data/wqp_glkn_all.csv")
+
+# writing cvs for "backup"
+write_csv(wqp_data_all,
+          paste0("C:/Users/kbailey/Documents/GLKN/WQ_data/wqp_glkn_all_",
+                 format(Sys.Date(), '%Y%m%d'),
+                 ".csv"))
 
 # Data Wrangling ----
 
@@ -213,7 +220,7 @@ wqp_data_thresh <- wqp_data_ml |>
          -ends_with(".y"))
 
 ## Removing VOYA Sites (Agnes, Jorgans, Oleary, Quarterline, and War Club) ----
-wqp_data_new <- wqp_data_thresh |> 
+wqp_data2 <- wqp_data_thresh |> 
   filter(!(MonitoringLocationName %in% c("Agnes Lake",
                                          "Jorgens Lake",
                                          "O'Leary Lake",
@@ -221,17 +228,13 @@ wqp_data_new <- wqp_data_thresh |>
                                          "War Club Lake")))
 
 ## Adding characteristicNames and cleaning up columns ----
-wqp_data <- wqp_data_new |> 
+wqp_data3 <- wqp_data2 |> 
   # adding char names
   left_join(chr_lookup,
             by = "CharacteristicName") |> 
   # adding year for cleaning purposes
   mutate(year = format(ActivityEndDate, "%Y"),
          month = format(ActivityEndDate, "%m")) |>
-  # filtering by sites that have >= 5 years of data
-  filter(n_distinct(year) >= 5,
-         .by = c(MonitoringLocationIdentifier,
-                 CharacteristicName)) |>
   # selecting necessary columns 
   select(ActivityIdentifier,
          MonitoringLocationIdentifier,
@@ -263,8 +266,22 @@ wqp_data <- wqp_data_new |>
          UpperDescription,
          Reference,
          PickListName,
-         AxisName)
+         AxisName) 
+
+# writing wqp data for annual report
+write_csv(wqp_data3,
+          paste0("C:/Users/kbailey/Documents/Development/GLKN_AnnualReports/data/wqp_glkn_",
+          format(Sys.Date(), "%Y"),
+          ".csv"))
+
+wqp_data <- wqp_data3 |>
+  # filtering by sites that have >= 5 years of data
+  filter(n_distinct(year) >= 5,
+         .by = c(MonitoringLocationIdentifier,
+                 CharacteristicName))
   
 # Writing the new wqp_data ----
 write_csv(wqp_data,
           "./data/wqp_glkn.csv")
+
+

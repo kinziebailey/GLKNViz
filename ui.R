@@ -58,6 +58,12 @@ ui <- shinyUI(
              tabsetPanel(
                tabPanel(
                  # Tab Name
+                 h4("About"),
+                 # Instruction.html
+                 includeHTML("www/AboutVisualizer.html")
+               ),
+               tabPanel(
+                 # Tab Name
                  h4("Instructions"),
                  # Instruction.html
                  includeHTML("www/Instruction.html")
@@ -89,12 +95,6 @@ ui <- shinyUI(
                  # correlation_mod.R
                  cp_ui("cp"),
                  details_ui("details_cp")
-               ),
-               tabPanel(
-                 # Tab Name
-                 h4("About"),
-                 # Instruction.html
-                 includeHTML("www/AboutVisualizer.html")
                ),
              )
              

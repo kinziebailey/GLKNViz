@@ -47,6 +47,9 @@ ts_ui <- function(id){
       inputId = ns("about_ts"),
       label = "About Time Series"
     ),
+    # Download Button
+    # downloadButton(ns("download_figure"),
+    #                "Download Figure"),
     # Plot 
     div(style = "min-height: 250px;
                  height: auto;",

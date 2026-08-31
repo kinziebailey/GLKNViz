@@ -3,5 +3,7 @@
 .RData
 .Ruserdata
 .positai
+.Renviron
+.Rprofile
 
 data/

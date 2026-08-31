@@ -122,8 +122,11 @@ write_csv(wqp_data_all,
           "./data/wqp_glkn_all.csv")
 
 # writing cvs for "backup"
+PATH_BACKUP <- Sys.getenv("PATH_BACKUP")
+
 write_csv(wqp_data_all,
-          paste0("C:/Users/kbailey/Documents/GLKN/WQ_data/wqp_glkn_all_",
+          paste0(PATH_BACKUP,
+                 "wqp_glkn_all_",
                  format(Sys.Date(), '%Y%m%d'),
                  ".csv"))
 
@@ -269,8 +272,11 @@ wqp_data3 <- wqp_data2 |>
          AxisName) 
 
 # writing wqp data for annual report
+PATH_ANNUAL <- Sys.getenv("PATH_ANNUALREPORT")
+
 write_csv(wqp_data3,
-          paste0("C:/Users/kbailey/Documents/Development/GLKN_AnnualReports/data/wqp_glkn_",
+          paste0(PATH_ANNUAL,
+                 "data/wqp_glkn_",
           format(Sys.Date(), "%Y"),
           ".csv"))
 

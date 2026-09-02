@@ -1,0 +1,13 @@
+name: GLKNViz-Dev
+title: GLKNViz-Dev
+username: kinziebailey
+account: kinziebailey
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 17564428
+bundleId: 12499453
+url: https://kinziebailey.shinyapps.io/GLKNViz-Dev/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: .Renviron|.Rprofile|CONTRIBUTING.md|DESCRIPTION.txt|GLKN_Visualizer_SOP.html|GLKN_Visualizer_SOP.Rmd|README.md|wqp_retrival.R

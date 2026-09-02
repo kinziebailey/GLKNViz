@@ -158,9 +158,11 @@ dp_server <- function(id, user_data){
                                aes(x = value,
                                    y = depth,
                                    color = MonitoringLocationName,
-                                   shape = MonitoringLocationName)) +
+                                   shape = MonitoringLocationName,
+                                   group = end_date)) +
         geom_path() + 
         geom_point_interactive(aes(tooltip = paste0("Site: ", MonitoringLocationName,
+                                                    "\nDate: ", end_date,
                                                     "\nDepth: ", depth,
                                                     "\nValue: ", value,
                                                     "\n", ResultDetectionConditionText))) +
@@ -215,7 +217,7 @@ dp_server <- function(id, user_data){
 
     })
     
-    # returing data details 
+    # returning data details 
     return(list(depthprofile_data = profile_data))
   })
 }

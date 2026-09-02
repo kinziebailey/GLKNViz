@@ -72,13 +72,16 @@ cp_server <- function(id, user_data){
       # required data
       req(input$select_param1, input$select_param2)
 
+      # # sampling period filter 
+      data <- data_filter(user_data())
+      
       # continue if data exists
-      correlation_long <- user_data() |> 
+      correlation_long <- data |> 
         dplyr::filter(PickListName %in% c(input$select_param1,
                                           input$select_param2)) |> 
         # filtering depth for averaging
         dplyr::filter(depth >= -2 | is.na(depth)) |>
-        # summarise data 
+        # summarize data 
         dplyr::summarise(value = case_when(n() == 1 ~ value[1], # needed with duplicate values
                                            n() == 2 ~ mean(value, na.rm = TRUE),
                                            n() >= 3 ~ median(value, na.rm = TRUE)),

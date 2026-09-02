@@ -29,6 +29,23 @@ wqp_data <- wqp_data1 |>
   dplyr::select(-ActivityStartDate,
                 -ActivityEndDate)
 
+### Date filtering for out of schedule data ----
+sampling_periods <- data.frame(Park =     c("APIS",  "INDU",  "ISRO",  "PIRO",  "SLBE",  "VOYA",  "SACN"),
+                               start_md = c("06-01", "04-15", "06-01", "06-01", "05-15", "05-16", "03-15"),
+                               end_md =   c("09-20", "10-15", "09-30", "09-15", "09-30", "09-30", "11-30"))
+
+data_filter <- function(df){
+  df |> 
+    left_join(sampling_periods,
+              by = "Park") |> 
+    mutate(month_day = format(end_date, "%m-%d")) |> 
+    filter(month_day >= start_md,
+           month_day <= end_md) |> 
+    select(-month_day,
+           -start_md,
+           -end_md)
+}
+
 ## Loading Modules ----
 ### Time Series
 source("modules/timeseries_mod.R")

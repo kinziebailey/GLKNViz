@@ -1,0 +1,72 @@
+/* Stle CSS for RMarkdown Document */
+
+/* Color Pallete */
+:root {
+  --nps-green: #4A6B47;
+  --nps-dark-green: #2F4B2F;
+  --nps-brown: #7B5E3B;
+  --nps-tan: #D9CBA8;
+  --nps-light-tan: #F2EAD3;
+  --nps-gray: #585858;
+  --nps-light-gray: #E6E6E6;
+  --nps-white: #FFFFFF;
+}
+
+/* Page Formatting */
+body {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--nps-white);
+  color: black;
+  margin: 0;
+  padding: 0;
+  line-height: 1.6;
+}
+
+/* Headers */
+h1, h2, h3, h4 { 
+color: black;
+  font-weight: 600;
+  margin-bottom: 0.5em;
+
+} 
+
+h1 {
+  padding-bottom: 0.3em;
+}
+
+/* Links */
+
+a {
+  color: var(--nps-brown);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: var(--nps-dark-green);
+}
+
+/* TOC container */
+#toc {
+  background-color: var(--nps-light-tan);
+  border-right: 5px solid var(--nps-brown);
+  padding: 1em;
+  width: 260px !important;   /* change width */
+}
+
+/* TOC header */
+#toc h2 {
+  color: var(--nps-green);
+  font-size: 1.3em;
+  border-bottom: 2px solid var(--nps-green);
+  margin-bottom: 0.5em;
+}
+
+/* TOC */
+#toc .active,
+#tocify .active,
+.tocify .active {
+  background-color: var(--nps-light-tan) !important;
+  color: var(--nps-dark-green) !important; 
+}
+

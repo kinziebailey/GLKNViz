@@ -4,14 +4,15 @@
 
 The `main` branch is Version 0.0.1 of the `GLKNViz` repository. This is the first 
 deployment of the Great Lakes Inventory and Monitoring Network water quality 
-shiny data visualizer. 
+shiny data visualizer. Previous archived versions of this RShiny app can be found
+at [www.github.com/kinziebailey/GLKNViz](www.github.com/kinziebailey/GLKNViz).
 
 ## Live Demo:
 [Click here to run the app](https://kinziebailey.shinyapps.io/GLKNViz-Dev/)
 
 ## Getting started: Running locally
 
-1. Create a new R Studio project File  -\> New Project -\> Version Control -\> Git -\> <https://github.com/kinziebailey/GLKNWaterViz>
+1. Create a new R Studio project File  -\> New Project -\> Version Control -\> Git -\> <https://github.com/DOI-NPS/GLKNWViz>
 
 2. Create a data folder. In the Console:
 
@@ -19,7 +20,7 @@ shiny data visualizer.
 dir.create("data")
 ```
 
-3. Copy the following files to your `data` folder from [here](some link)
+3. Copy the following files to your `data` folder from (insert link when available)
   - chr_lookup.csv
   - stations.csv
   - thresholds.csv

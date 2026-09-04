@@ -1,6 +1,6 @@
 # Contributing:
 
-This repo contains code to update, edit, and deploy the Great Lakes Network discrete water quality data visualizer. 
+This repo contains code to update, edit, and deploy the Great Lakes Inventory and Monitoring Network discrete water quality data visualizer. 
 
 ## Contributing Requirements:
 

@@ -1,7 +1,7 @@
 ---
 title: "Great Lakes Network Water Quality Data Visualizer"
 subtitle: "Standard Operating Procedure"
-author: "Alex Egan, Richard Damstra, Cyrus Hester, and David VenderMeulen"
+author: "Alex Egan, Richard Damstra, Cyrus Hester, and David VanderMeulen"
 date: "`r Sys.Date()`"
 output: 
   html_document:
@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Purpose
 
-This SOP establishes the standardized processes for the creation, maintenance, and usage of the Great Lakes Network (GLKN) discrete water quality monitoring data visualizer, to ensure data integrity, compliance, and usability. Before running this SOP, data should undergo all QA/QC procedures and be submitted to the Water Quality Portal. This data visualizer supports resource managers, water program specialists, scientists, and park leadership in protecting aquatic ecosystems, evaluating watershed health, and meeting compliance and reporting requirements.
+This SOP establishes the standardized processes for the creation, maintenance, and usage of the Great Lakes Inventory and Monitoring Network (GLKN) discrete water quality data visualizer, to ensure data integrity, compliance, and usability. Before running this SOP, data should undergo all QA/QC procedures and be published in the [U.S. EPA's Water Quality Portal](https://www.waterqualitydata.us/) (WPQ), a public-facing data repository that allows users to search, download, and consume consolidated water quality data. This data visualizer supports resource managers, water program specialists, scientists, and park leadership in protecting aquatic ecosystems, evaluating watershed health, and meeting compliance and reporting requirements.
 
 # Scope
 
@@ -27,29 +27,25 @@ It covers:
 
 - Long-term monitoring of water quality data at select lake sites
 - Long-term monitoring of water quality data at select river sites
-- All visualizer components including metadata, visualizations, filters, alters, and reporting exports. 
+- All visualizer components including metadata, visualizations, data wrangling, and reporting exports. 
 
 # Roles and Responsibilities
 
-## Visualizer Maintainer
-
-The visualizer maintainer oversees the visualizer development and publication, including but not limited to maintenance of documentation, version history, and data updates. 
-
 ## Water Quality Program Lead
 
-The water quality program lead validates scientific relevance of metrics, reviews thresholds and ensures consistency with NPS water resource monitoring protocols. 
+The water quality program lead validates scientific relevance of metrics, reviews ecological thresholds, and ensures consistency with NPS water resource monitoring protocols. The water quality program lead also ensures data have been properly entered, formatted, QA/QC’ed, and published in the water quality portal.
 
 ## Data Manager
 
-The data manager ensures data have been properly entered, formatted, QA/QC'ed, and submitted to the water quality portal prior to visualizer publication
+The data manager oversees visualizer development and publication, including but not limited to maintenance of documentation, version history, and periodic data updates. 
 
 # Data Sources 
 
-This visualizer pulls all data from the inter-agency [Water Quality Portal](https://www.waterqualitydata.us/) (WQP), a public-facing data repository that allows users to search, download, and consume consolidated water quality data. GLKN water quality data in the WQP is identical to that published on the National Park Service (NPS) Data Store, where GLKN water quality data are published as data packages, found here: [NPS Data Store](https://irma.nps.gov/DataStore/).
+This visualizer pulls all data from the WQP. GLKN water quality data in the WQP is identical to that published on the National Park Service (NPS) Data Store, where GLKN water quality data are published as data packages, found here: [NPS Data Store](https://irma.nps.gov/DataStore/).
 
 # Data Acquisition and Processing 
 
-To acquire and update the dataset used in the visualizer, run the wqp_retrival.R document. Before this document is run, update station.csv, chr_lookup.csv, and thresholds.csv with any sites, water quality parameters, and thresholds that might have changed from the previous year. Data is is then pulled from the water quality portal using the dataRetrieval package (version 2.7.25). The full dataset is then saved as wqp_glkn_all_currentdate.csv. Data is then filtered to remove non-numeric water quality parameters, quality control data, and sites were less than 5 years of data are collected. For parameters that have been censored, if a value has been reported by the analytically laboratory, it is added to the dataset and noted. Thresholds and site information is then added to the dataset and columns are cleaned up. Once the dataset is prepared, it is saved as wqp_glkn.csv. Additionally, before the sites are filtered for >5 years of data collection, a version of the dataset is saved for the annual reports (wqp_glkn_currentdate.csv). 
+To acquire and update the dataset used in the visualizer, run the wqp_retrival.R document. However, before doing so, first update station.csv, chr_lookup.csv, and thresholds.csv with any sites, water quality parameters, and thresholds that might have changed since the last time data were updated and used in the visualizer. Data are then pulled from the water quality portal using the dataRetrieval package (version 2.7.25). The full dataset is then saved as wqp_glkn_all_currentdate.csv. Data are then filtered to remove non-numeric water quality parameters, quality control data, and sites monitored less than five years and not designated as sites being actively monitored. Values reported by analytical laboratories that fall under the lower quantification limit but above the detection limit are censured data but for this visualizer are included as data points in the figures. Thresholds and site information are then added to the dataset and columns are cleaned up. Once the dataset is prepared, it is saved as wqp_glkn.csv. Additionally, before the sites are filtered for >=5 years of data collection, a version of the dataset is saved for the annual reports (wqp_glkn_currentdate.csv). 
 
 # Parameter Information
 
@@ -63,8 +59,8 @@ All information related to relevant parameters can be found in the related proto
 
 ## Elements 
 
-The visualizer contains a tabs for each section of the visualizer. The About tab contains detailed information about the data, the visualizers purpose, and the code. The Instructions tab contains detailed information about the operation and features of the visualizer. The Time Series, Depth Profiles, Boxplot, and Correlation Plot tabs contain the figures associated with the tab names. Each tab associated with a figure contains additional features (e.g. parameter and date selection, About figure information, and data and excrescences associated with data plotted). The left hand side of the visualizer contains the park and site selection drop downs with an associated map. The style of the visualizer is in the styes.css file. 
+The visualizer contains a tab for each section of the visualizer. The About tab contains detailed information about the data, the visualizer's purpose, and the code. The Instructions tab contains detailed information about the operation and features of the visualizer. The Time Series, Depth Profiles, Boxplot, and Correlation Plot tabs contain the figures associated with the tab names. Each tab associated with a figure contains additional features (e.g. parameter and date selection, About figure information, and data and exceedences associated with data plotted). The left-hand side of the visualizer contains the park and site selection drop downs with an associated map. The style of the visualizer is in the styes.css file. 
 
 # Recording Keeping
 
-A static version of the visualizer will be kept in the NPS data store. The development version of the visualizer will be kept on the maintainers DGEC Github account, where version history will be saved and logged. 
+A static version of the visualizer will be kept in the NPS Data Store. The development version of the visualizer will be kept on the maintainers DOI Github Enterprise Cloud (DGEC) account, typically the data manager, where version history will be saved and logged. 

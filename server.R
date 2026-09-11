@@ -1,3 +1,5 @@
+# The main Server for the GLKN Water Quality Visualizer 
+
 # Libraries ----
 library(shiny)
 library(ggplot2)

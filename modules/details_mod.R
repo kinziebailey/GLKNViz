@@ -33,7 +33,8 @@ details_server <- function(id, data_from){
       # required data
       req(get_data())
       
-      data_values1 <- get_data()
+      data_values1 <- get_data() |> 
+        dplyr::filter(!is.na(value))
       
       # warning if no data 
       shiny::validate(
@@ -51,7 +52,7 @@ details_server <- function(id, data_from){
       
       
       # continue if data
-      data_values <- data_values1 |> 
+      data_values <- get_data() |> 
         dplyr::select(any_of(c("Park",
                                "MonitoringLocationName",
                                "lat",
@@ -100,7 +101,8 @@ details_server <- function(id, data_from){
       # required data
       req(get_data())
       
-      exceedance_values1 <- get_data()
+      exceedance_values1 <- get_data() |> 
+        dplyr::filter(!is.na(value))
 
       # warning if no data 
       shiny::validate(
@@ -119,7 +121,7 @@ details_server <- function(id, data_from){
                       Reference) |> 
         dplyr::distinct() 
 
-      exceedance_values2 <- exceedance_values1 |>
+      exceedance_values2 <- get_data() |>
         dplyr::left_join(wqp_data1) |>  #,
                          # by = join_by(Park,
                          #              MonitoringLocationName,

@@ -40,6 +40,10 @@ cp_ui <- function(id){
       inputId = ns("about_cp"),
       label = "About Correlation Plot"
     ),
+    # Download Button
+    downloadButton(ns("download_figure"),
+                   "Download Figure"),
+    # Plot 
     div(style = "min-height: 300px;
                  height: auto;",
     girafeOutput(ns("CorrelationPlot"))
@@ -73,10 +77,10 @@ cp_server <- function(id, user_data){
       req(input$select_param1, input$select_param2)
 
       # # sampling period filter 
-      data <- data_filter(user_data())
+      cor_data <- data_filter(user_data())
       
       # continue if data exists
-      correlation_long <- data |> 
+      correlation_long <- cor_data |> 
         dplyr::filter(PickListName %in% c(input$select_param1,
                                           input$select_param2)) |> 
         # filtering depth for averaging
@@ -117,7 +121,7 @@ cp_server <- function(id, user_data){
     ### Reactive for Regressions ----
     regression_type <- reactive({
       
-      df <- correlation_data()
+      reg_df <- correlation_data()
       
       # to be able to select parameters in data
       x <- paste0("value_", input$select_param1)
@@ -130,7 +134,7 @@ cp_server <- function(id, user_data){
       if(input$regression_selection == "none") return(NULL)
       
       # creating regressions for each option
-      df_reg <- df |> 
+      df_reg <- reg_df |> 
         # for multiple sites
         dplyr::group_by(MonitoringLocationName) |> 
         # removing NA
@@ -198,31 +202,65 @@ cp_server <- function(id, user_data){
       n_data <- correlation_df |> 
         dplyr::filter(!is.na(.data[[x]]),
                       !is.na(.data[[y]])) |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## below quantification limit
       n_below_quant <- correlation_longdf |> 
         dplyr::filter(ResultDetectionConditionText == "< Quantification Limit") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## above quantification limit
       n_above_quant <- correlation_longdf |> 
         dplyr::filter(ResultDetectionConditionText == "> Quantification Limit") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## not detected
       n_detection_limit <- correlation_longdf |> 
         dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## not reported
       n_report_limit <- correlation_longdf |> 
         dplyr::filter(ResultDetectionConditionText == "Not Reported") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
 
       # Axis Labels
       x_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param1])
       y_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param2])
+      
+      # filtering out NA values for plotting 
+      correlation_df <- correlation_df |> 
+        dplyr::filter(!is.na(value))
+      
+      # Warning if no data
+      shiny::validate(
+        shiny::need(nrow(correlation_df) > 0,
+                    "No data available for the selected Park / Site / Parameter"))
+      
+      # Need both parameters 
+      ## x-axis
+      shiny::validate(
+        shiny::need(x %in% names(correlation_df),
+                    "No data available for the x-axis parameter for the selected Park / Site.")
+      )
+      
+      ## y-axis
+      shiny::validate(
+        shiny::need(y %in% names(correlation_df),
+                    "No data available for the y-axis parameter for the selected Park / Site.")
+      )
+      
+      ## Need paired data
+      shiny::validate(
+        shiny::need(sum(!is.na(correlation_df[[x]]) &
+                          !is.na(correlation_df[[y]])) > 0,
+                    "Not enough paired data tp produce a correlation plot.")
+      )
       
       # plotting 
       ggcorrelation <- ggplot(data = correlation_df,
@@ -243,16 +281,11 @@ cp_server <- function(id, user_data){
              alt = "A plot of the correlation between the two parameters of interest.") +
         regression_type() +
         scale_color_natparks_d("Yellowstone") +
-        ggtitle(paste0("Total Measurements Plotted: ",
-                       n_data,
-                       "\nValues < Quantification Limit: ",
-                       n_below_quant,
-                       "\nValues > Quantification Limit: ",
-                       n_above_quant,
-                       "\nValues < Detection Limit: ",
-                       n_detection_limit,
-                       "\nValues Not Reported: ",
-                       n_report_limit))  +
+        ggtitle(paste0("Total Measurements Plotted: ", n_data,
+                       "\nValues < Quantification Limit: ", n_below_quant,
+                       "\nValues > Quantification Limit: ", n_above_quant,
+                       "\nValues < Detection Limit: ", n_detection_limit,
+                       "\nValues Not Reported: ", n_report_limit))  +
         theme_minimal() +
         theme(plot.title = element_text(size = 5),
               axis.title = element_text(size = 8),
@@ -262,8 +295,109 @@ cp_server <- function(id, user_data){
       
       girafe(ggobj = ggcorrelation,
              height_svg = 5,
-             width_svg = 6)
+             width_svg = 6,
+             options = list(opts_toolbar(hidden = "saveaspng")))
       
+    })
+    
+    ## Static plot for download ----
+    static_correlation <- reactive({
+      
+      # to be able to select parameters in data
+      x <- paste0("value_", input$select_param1)
+      y <- paste0("value_", input$select_param2)
+      
+      # Calling datasets 
+      correlation_longdf <- correlation_long()
+      correlation_df <- correlation_data()
+      
+      req(nrow(correlation_longdf) > 0 &
+            nrow(correlation_df) > 0)
+      
+      # Reporting Limits
+      ## number of values plotted
+      n_data <- correlation_df |> 
+        dplyr::filter(!is.na(.data[[x]]),
+                      !is.na(.data[[y]])) |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## below quantification limit
+      n_below_quant <- correlation_longdf |> 
+        dplyr::filter(ResultDetectionConditionText == "< Quantification Limit") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## above quantification limit
+      n_above_quant <- correlation_longdf |> 
+        dplyr::filter(ResultDetectionConditionText == "> Quantification Limit") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## not detected
+      n_detection_limit <- correlation_longdf |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## not reported
+      n_report_limit <- correlation_longdf |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Reported") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      # Axis Labels
+      x_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param1])
+      y_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param2])
+      
+      # plotting 
+      c <- ggplot(data = correlation_df,
+                  aes(x = .data[[x]],
+                      y = .data[[y]],
+                      color = MonitoringLocationName,
+                      shape = MonitoringLocationName)) +
+        geom_point() + 
+        labs(x = x_axis,
+             y = y_axis,
+             color = "Site",
+             shape = "Site") +
+        regression_type() +
+        scale_color_natparks_d("Yellowstone") +
+        ggtitle(paste0("Total Measurements Plotted: ", n_data,
+                       "\nValues < Quantification Limit: ", n_below_quant,
+                       "\nValues > Quantification Limit: ", n_above_quant,
+                       "\nValues < Detection Limit: ", n_detection_limit,
+                       "\nValues Not Reported: ", n_report_limit))  +
+        theme_minimal() +
+        theme(plot.title = element_text(size = 5),
+              axis.title = element_text(size = 8),
+              axis.text = element_text(size = 6),
+              legend.text = element_text(size = 6),
+              legend.title = element_text(size = 8))
+    })
+    
+    ### Download handler ----
+    output$download_figure <- downloadHandler(filename = function() {
+
+      # file name
+      paste0("Correlation_", gsub("\\s+", "_", input$select_param1), "_",
+             gsub("\\s+", "_", input$select_param2), "_",
+             format(Sys.Date(), "%Y%m%d"),
+             ".png")
+    },
+    
+    # saving
+    content = function(file) {
+      
+      c <- static_correlation()
+      
+      ggsave(filename = file,
+             plot = c,
+             width = 6, 
+             height = 3, 
+             units = "in", 
+             dpi = 300, 
+             background = "white")
     })
     
     # returning data details 

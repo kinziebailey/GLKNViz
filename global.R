@@ -1,4 +1,4 @@
-# Global file for GLKN Visualizer 
+# The Global file for GLKN Visualizer 
 
 # Libraries ----
 library(shiny)

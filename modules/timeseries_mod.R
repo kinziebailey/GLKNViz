@@ -48,8 +48,8 @@ ts_ui <- function(id){
       label = "About Time Series"
     ),
     # Download Button
-    # downloadButton(ns("download_figure"),
-    #                "Download Figure"),
+    downloadButton(ns("download_figure"),
+                   "Download Figure"),
     # Plot 
     div(style = "min-height: 250px;
                  height: auto;",
@@ -121,14 +121,14 @@ ts_server <- function(id, user_data){
     ### Reactive for Regressions ----
     regression_type <- reactive({
 
-      df <- timeseries_data()
+      regression_df <- timeseries_data()
 
       # building regressions:
       ## no regression, start here 
       if(input$regression_selection == "none") return(NULL)
 
       # creating regressions for each option
-      df_reg <- df |>
+      df_reg <- regression_df |>
         # converting date to numeric for loess
         dplyr::mutate(end_date_num = as.numeric(end_date)) |> 
         # for multiple sites
@@ -182,32 +182,42 @@ ts_server <- function(id, user_data){
       # Reporting Limits 
       ## number of values plotted
       n_data <- timeseries_df |> 
-        dplyr::filter(!is.na(value)) |> 
-        dplyr::tally()
+        dplyr::filter(!is.na(value)) |>
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## below quantification limit
       n_below_quant <- timeseries_df |> 
         dplyr::filter(ResultDetectionConditionText == "< Quantification Limit") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## above quantification limit
       n_above_quant <- timeseries_df |> 
         dplyr::filter(ResultDetectionConditionText == "> Quantification Limit") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## not detected
       n_detection_limit <- timeseries_df |> 
         dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       ## not reported
       n_report_limit <- timeseries_df |> 
         dplyr::filter(ResultDetectionConditionText == "Not Reported") |> 
-        dplyr::tally()
+        dplyr::tally() |> 
+        dplyr::pull(n)
       
       # filtering out NA values for plotting 
       timeseries_df1 <- timeseries_df |> 
         dplyr::filter(!is.na(value))
+      
+      # Warning if no data
+      shiny::validate(
+        shiny::need(nrow(timeseries_df1) > 0,
+                    "No data available for the selected Park / Site / Parameter"))
       
       # plotting
       ggtimeseries <- ggplot(data = timeseries_df1,
@@ -246,7 +256,7 @@ ts_server <- function(id, user_data){
       
       # adding threshold lines 
       if(input$thresholds){
-        ggtimeseries = ggtimeseries +
+        ggtimeseries <- ggtimeseries +
           geom_hline(data = threshold_df,
                      aes(yintercept = thresh,
                          linetype = Threshold),
@@ -258,11 +268,135 @@ ts_server <- function(id, user_data){
       girafe(ggobj = ggtimeseries,
              height_svg = 3,
              width_svg = 6,
-             options = list(opts_toolbar(saveaspng = FALSE)))
+             options = list(opts_toolbar(hidden = "saveaspng")))
       
     })
     
+    ## Static plot for download ----
+    static_timeseries <- reactive({
+      
+      df_timeseries <- timeseries_data()
+      
+      req(nrow(df_timeseries) > 0)
+      
+      # Thresholds
+      threshold_df <- df_timeseries |>
+        dplyr::select(UpperPoint, 
+                      LowerPoint) |>
+        dplyr::distinct() |>
+        tidyr::pivot_longer(cols = everything(),
+                            names_to = "Threshold", 
+                            values_to = "thresh") |>
+        dplyr::mutate(Threshold = recode(Threshold,
+                                         UpperPoint = "Upper Threshold",
+                                         LowerPoint = "Lower Threshold"))
+      
+      # Reporting Limits
+      ## number of values plotted
+      n_data <- df_timeseries |> 
+        dplyr::filter(!is.na(value)) |>
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## below quantification limit
+      n_below_quant <- df_timeseries |> 
+        dplyr::filter(ResultDetectionConditionText == "< Quantification Limit") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## above quantification limit
+      n_above_quant <- df_timeseries |> 
+        dplyr::filter(ResultDetectionConditionText == "> Quantification Limit") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## not detected
+      n_detection_limit <- df_timeseries |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Detected") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      ## not reported
+      n_report_limit <- df_timeseries |> 
+        dplyr::filter(ResultDetectionConditionText == "Not Reported") |> 
+        dplyr::tally() |> 
+        dplyr::pull(n)
+      
+      # filtering out NA values
+      df_timeseries1 <- df_timeseries |> 
+        dplyr::filter(!is.na(value))
+      
+      # setting y-axis label
+      ylab_txt <- unique(df_timeseries$AxisName)
+      
+      if (length(ylab_txt) > 1) ylab_txt <- ylab_txt[1]
+      
+      t <- ggplot(data = df_timeseries1,
+                  aes(end_date, 
+                      value, 
+                      color = MonitoringLocationName, 
+                      shape = MonitoringLocationName)) +
+        geom_point() +
+        geom_line(na.rm = FALSE) +
+        labs(x = "Date", 
+             y = ylab_txt, 
+             color = "Site", 
+             shape = "Site") +
+        regression_type() +
+        ggtitle(paste0("Total Measurements Plotted: ", n_data,
+                       "\nValues < Quantification Limit: ", n_below_quant,
+                       "\nValues > Quantification Limit: ", n_above_quant,
+                       "\nValues < Detection Limit: ", n_detection_limit,
+                       "\nValues Not Reported: ", n_report_limit)) +
+        scale_color_natparks_d("Yellowstone") +
+        theme_minimal() +
+        theme(plot.title = ggplot2::element_text(size = 5),
+              axis.title = ggplot2::element_text(size = 8),
+              axis.text = ggplot2::element_text(size = 6),
+              legend.text = ggplot2::element_text(size = 6),
+              legend.title = ggplot2::element_text(size = 8))
+      
+      # adding threshold lines
+      if (isTRUE(input$thresholds)) {
+        t <- t +
+          geom_hline(data = threshold_df,
+                     aes(yintercept = thresh, 
+                         linetype = Threshold),
+                     color = "black") +
+          scale_linetype_manual(values = c("Upper Threshold" = "dashed",
+                                           "Lower Threshold" = "dotted"))
+      }
+      
+      t
+      
+    })
+    
+    ### Download handler ----
+    output$download_figure <- downloadHandler(filename = function() {
+      
+      # file name 
+      paste0("TimeSeries_", gsub("\\s+", "_", input$select_param), "_",
+             format(input$date_range[1], "%Y%m%d"), "_",
+             format(input$date_range[2], "%Y%m%d"),
+             ".png")
+      },
+      
+      # saving
+      content = function(file) {
+        
+        t <- static_timeseries()
+        
+        ggsave(filename = file,
+               plot = t,
+               width = 6, 
+               height = 3, 
+               units = "in", 
+               dpi = 300, 
+               background = "white")
+      })
+    
     # returning data details 
     return(list(timeseries_data = timeseries_data))
+    
   })
 }

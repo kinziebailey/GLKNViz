@@ -1,4 +1,4 @@
-# The User Interface for the GLKN Water Quality Visualizer 
+# The main User Interface for the GLKN Water Quality Visualizer 
 
 # Libraries ----
 library(shiny) # shiny app

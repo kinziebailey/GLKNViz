@@ -327,8 +327,7 @@ dp_server <- function(id, user_data){
     output$download_figure <- downloadHandler(filename = function() {
       
       # file name 
-      paste0("Profile_", gsub("\\s+", "_", input$select_param), "_",
-             format(Sys.Date(), "%Y"),
+      paste0("Profile_", gsub("\\s+", "_", input$select_param),
              ".png")
     },
     
@@ -339,11 +338,11 @@ dp_server <- function(id, user_data){
       
       ggsave(filename = file,
              plot = p,
-             width = 6, 
-             height = 3, 
+             # width = 6, 
+             # height = 3, 
              units = "in", 
-             dpi = 300, 
-             background = "white")
+             device = svglite,
+             dpi = 300)
     })
     
     # returning data details 

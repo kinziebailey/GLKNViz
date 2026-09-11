@@ -8,6 +8,7 @@ library(ggpmisc)
 library(lubridate)
 library(NatParksPalettes)
 library(ggiraph)
+library(svglite)
 
 # Load data ----
 ## WQ Data ----

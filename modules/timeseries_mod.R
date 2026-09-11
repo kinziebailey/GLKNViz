@@ -391,8 +391,8 @@ ts_server <- function(id, user_data){
                width = 6, 
                height = 3, 
                units = "in", 
-               dpi = 300, 
-               background = "white")
+               device = svglite,
+               dpi = 300)
       })
     
     # returning data details 

@@ -301,9 +301,9 @@ bp_server <- function(id, user_data){
              plot = b,
              width = 6, 
              height = 3, 
-             units = "in", 
-             dpi = 300, 
-             background = "white")
+             units = "in",
+             device = svglite,
+             dpi = 300)
     })
     
     # returning data details

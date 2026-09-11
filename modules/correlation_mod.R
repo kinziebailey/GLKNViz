@@ -235,7 +235,8 @@ cp_server <- function(id, user_data){
       
       # filtering out NA values for plotting 
       correlation_df <- correlation_df |> 
-        dplyr::filter(!is.na(value))
+        dplyr::filter(!is.na(.data[[x]]),
+                      !is.na(.data[[y]]))
       
       # Warning if no data
       shiny::validate(
@@ -394,10 +395,10 @@ cp_server <- function(id, user_data){
       ggsave(filename = file,
              plot = c,
              width = 6, 
-             height = 3, 
+             height = 5, 
              units = "in", 
-             dpi = 300, 
-             background = "white")
+             device = svglite,
+             dpi = 300)
     })
     
     # returning data details 

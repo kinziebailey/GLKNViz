@@ -351,6 +351,11 @@ cp_server <- function(id, user_data){
       x_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param1])
       y_axis <- unique(correlation_longdf$AxisName[correlation_longdf$PickListName == input$select_param2])
       
+      # removing na values 
+      correlation_df <- correlation_df |>
+        dplyr::filter(!is.na(.data[[x]]),
+                      !is.na(.data[[y]]))
+      
       # plotting 
       c <- ggplot(data = correlation_df,
                   aes(x = .data[[x]],

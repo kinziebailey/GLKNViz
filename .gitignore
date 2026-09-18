@@ -8,5 +8,4 @@
 *.html
 
 data/
-
-code.json
+rsconnect/
